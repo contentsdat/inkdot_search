@@ -587,6 +587,27 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 9px;
 }
 
+/* chart metric tabs */
+.chart-tabs {
+  display: flex; gap: 0;
+  margin-bottom: 12px;
+  border: 1px solid var(--line-2);
+  width: fit-content;
+}
+.chart-tab {
+  background: transparent; border: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink-3);
+  padding: 4px 9px;
+  border-right: 1px solid var(--line-2);
+  transition: var(--t);
+}
+.chart-tab:last-child { border-right: none; }
+.chart-tab:hover { color: var(--blue); }
+.chart-tab.on { background: var(--ink-1); color: white; }
+
 /* bars (editorial style) */
 .bars { display: flex; flex-direction: column; gap: 12px; }
 .bar-item {}
@@ -999,7 +1020,50 @@ td.tbl-title-cell { font-weight: 500; letter-spacing: -0.01em; transition: color
 
 mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-weight: 700; }
 
-/* ──────────────────────────────────────── PAGINATION */
+/* ──────────────────────────────────────── HOME RESET BANNER */
+.home-reset-bar {
+  display: none;
+  max-width: 1320px; margin: 0 auto;
+  padding: 0 32px;
+}
+.home-reset-bar.visible { display: block; }
+.home-reset-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--ink-1);
+  color: white;
+  padding: 12px 20px;
+  gap: 16px;
+}
+.home-reset-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  display: flex; align-items: center; gap: 10px;
+}
+.home-reset-label strong {
+  color: white;
+  font-size: 12px;
+}
+.home-reset-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--blue);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: var(--t);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.home-reset-btn:hover { background: var(--blue-2); }
+.home-reset-btn svg { width: 11px; height: 11px; }
+
+
 .pager {
   display: flex; justify-content: center; align-items: center;
   gap: 0;
@@ -1456,10 +1520,6 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
     </a>
     <div class="hdr-right">
       <span class="meta-text" id="headerMeta"></span>
-      <button class="btn-load" onclick="openConvModal()" style="margin-right:6px">
-        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 1h6l2 2v8H2V1z"/><path d="M7 1v3h3M4 6h4M4 8h4"/></svg>
-        데이터 변환기
-      </button>
       <button class="btn-load" onclick="openDbModal()">
         <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 3a1 1 0 011-1h2.5l1 1H10a1 1 0 011 1v5a1 1 0 01-1 1H2a1 1 0 01-1-1V3z"/></svg>
         DB 불러오기
@@ -1499,6 +1559,20 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
     <button onclick="openDbModal()">다른 DB 불러오기</button>
   </div>
 </section>
+
+<!-- HOME RESET BAR -->
+<div class="home-reset-bar" id="homeResetBar">
+  <div class="home-reset-inner">
+    <span class="home-reset-label">
+      <span>현재 선택:</span>
+      <strong id="homeResetLabel">—</strong>
+    </span>
+    <button class="home-reset-btn" onclick="goHome()">
+      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 6L6 1l5 5M2 5.5V11h3V7.5h2V11h3V5.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      처음으로 돌아가기
+    </button>
+  </div>
+</div>
 
 <!-- PRESETS -->
 <div class="preset-band">
@@ -1561,19 +1635,14 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
       <div class="stat-list" id="statMini"></div>
     </div>
 
-    <!-- 주차별 추이 -->
-    <div class="side-block">
-      <div class="side-head"><h4>WEEKLY TREND</h4><span class="mono" style="font-size:10px;color:var(--ink-4)">VIEWS</span></div>
-      <div class="trend-wrap">
-        <div class="trend-tip" id="trendTip"></div>
-        <svg class="trend-svg" id="trendSvg" viewBox="0 0 200 60" preserveAspectRatio="none"></svg>
-        <div class="trend-foot" id="trendFoot"></div>
-      </div>
-    </div>
-
     <!-- 차트 -->
     <div class="side-block">
-      <div class="side-head"><h4>TOP CHANNELS</h4><span class="mono" style="font-size:10px;color:var(--ink-4)">BY VIEWS</span></div>
+      <div class="side-head"><h4>TOP CHANNELS</h4><span class="mono" style="font-size:10px;color:var(--ink-4)">BY METRIC</span></div>
+      <div class="chart-tabs">
+        <button class="chart-tab on" data-metric="v" onclick="setChartMetric('v')">조회수</button>
+        <button class="chart-tab" data-metric="l" onclick="setChartMetric('l')">좋아요</button>
+        <button class="chart-tab" data-metric="c" onclick="setChartMetric('c')">댓글</button>
+      </div>
       <div class="bars" id="topOrgChart"></div>
     </div>
   </aside>
@@ -1649,6 +1718,7 @@ let currentPage = 1;
 let currentView = 'list';
 let activeOrgType = '';
 let activeVidType = '';
+let chartMetric = 'v'; // 'v' | 'l' | 'c'
 const PAGE_SIZE = 15;
 
 // ─── Topbar date ───
@@ -1941,8 +2011,41 @@ function applyFilters() {
   });
 
   filtered = res;
-  updateStats(); renderResult(); renderTopOrgChart(); renderTrendChart();
+  updateStats(); renderResult(); renderTopOrgChart();
+  updateHomeResetBar();
 }
+
+function goHome() {
+  resetFilters();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateHomeResetBar() {
+  const bar = document.getElementById('homeResetBar');
+  const lbl = document.getElementById('homeResetLabel');
+  if (!bar || !lbl) return;
+
+  const parts = [];
+  if (activePreset) {
+    const p = PRESETS.find(x => x.id === activePreset);
+    if (p) parts.push('퀵 픽: ' + p.name);
+  }
+  if (currentKeyword) parts.push('키워드: "' + currentKeyword + '"');
+  if (activeOrgType) parts.push('기관: ' + activeOrgType);
+  if (activeVidType) parts.push('유형: ' + activeVidType);
+  const org = document.getElementById('orgFilter');
+  if (org && org.value) parts.push('기관명: ' + org.value);
+  const year = document.getElementById('yearFilter');
+  if (year && year.value) parts.push('기간: ' + year.value + '년');
+
+  if (parts.length > 0) {
+    lbl.textContent = parts.join(' · ');
+    bar.classList.add('visible');
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+
 
 function resetFilters() {
   activeOrgType = ''; activeVidType = '';
@@ -2016,9 +2119,15 @@ function renderTrendChart() {
   foot.innerHTML = `<span>${esc(weeks[0])}</span><span>${esc(wlast)}</span>`;
 }
 
+function setChartMetric(m) {
+  chartMetric = m;
+  document.querySelectorAll('.chart-tab').forEach(b => b.classList.toggle('on', b.dataset.metric === m));
+  renderTopOrgChart();
+}
+
 function renderTopOrgChart() {
   const freq = {};
-  filtered.forEach(d => { if(d.o) freq[d.o] = (freq[d.o]||0) + d.v; });
+  filtered.forEach(d => { if(d.o) freq[d.o] = (freq[d.o]||0) + (d[chartMetric]||0); });
   const top = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0,6);
   const wrap = document.getElementById('topOrgChart');
   if (!top.length) { wrap.innerHTML = '<div class="mono" style="font-size:10.5px;color:var(--ink-4);text-align:center;padding:8px 0">NO DATA</div>'; return; }
@@ -2206,7 +2315,7 @@ function renderPagination(totalPages) {
   btns += `<button class="pg" onclick="goPage(${p-1})" ${p===1?'disabled':''}>← PREV</button>`;
   const range = [];
   for (let i=1;i<=totalPages;i++) {
-    if (i===1 || i===totalPages || Math.abs(i-p)<=2) range.push(i);
+    if (i===1 || i===totalPages || Math.abs(i-p)<=4) range.push(i);
     else if (range[range.length-1]!=='…') range.push('…');
   }
   range.forEach(r => {
@@ -2218,7 +2327,8 @@ function renderPagination(totalPages) {
 }
 function goPage(n) {
   currentPage = n; renderResult();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const area = document.getElementById('resultArea');
+  if (area) area.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // modal
