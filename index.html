@@ -1,0 +1,2542 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>잉크닷 — 공공기관 유튜브 아카이브</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* warm-tinted paper */
+  --paper:     #fafaf7;
+  --paper-2:   #f3f2ec;
+  --paper-3:   #ebeae3;
+  --line:      #e0ddd4;
+  --line-2:    #cdc9bc;
+
+  --ink-1: #0e0e10;
+  --ink-2: #2a2a2c;
+  --ink-3: #5a5a5c;
+  --ink-4: #8b8b8d;
+  --ink-5: #b8b7b3;
+
+  --blue:    #1a3eff;
+  --blue-2:  #0029d6;
+  --blue-3:  #001bb0;
+  --blue-tint: #e6ebff;
+  --blue-tint-2: #d4ddff;
+
+  --t: 180ms cubic-bezier(.4,0,.2,1);
+}
+
+html, body { background: var(--paper); }
+body {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--ink-1);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+button { font-family: inherit; cursor: pointer; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+.serif { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; }
+
+/* ──────────────────────────────────────── HEADER (slim navy strip) */
+.topbar {
+  background: var(--ink-1);
+  color: white;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+.topbar-in {
+  max-width: 1320px; margin: 0 auto;
+  padding: 8px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.topbar-in span { color: rgba(255,255,255,0.55); }
+.topbar-in .blue-dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--blue); margin-right: 6px; vertical-align: middle;
+  box-shadow: 0 0 8px var(--blue);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.hdr {
+  position: sticky; top: 0; z-index: 90;
+  background: rgba(250,250,247,0.92);
+  backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.hdr-in {
+  max-width: 1320px; margin: 0 auto;
+  height: 60px; padding: 0 32px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.brand {
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none; color: inherit;
+}
+.brand-mark {
+  position: relative;
+  width: 28px; height: 28px;
+}
+.brand-mark::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--blue);
+  border-radius: 50%;
+}
+.brand-mark::after {
+  content: ''; position: absolute;
+  width: 8px; height: 8px; top: 10px; left: 10px;
+  background: var(--paper);
+  border-radius: 50%;
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.1; }
+.brand-name {
+  font-family: 'Instrument Serif', serif;
+  font-size: 24px; font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--ink-1);
+}
+.brand-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.hdr-right { display: flex; align-items: center; gap: 10px; }
+.meta-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+.btn-load {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--ink-1); color: white;
+  border: none;
+  padding: 8px 14px;
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 0.02em;
+  border-radius: 999px;
+  transition: var(--t);
+}
+.btn-load:hover { background: var(--blue); }
+.btn-load svg { width: 12px; height: 12px; }
+
+/* ──────────────────────────────────────── HERO (editorial) */
+.hero {
+  max-width: 1320px; margin: 0 auto;
+  padding: 64px 32px 32px;
+  position: relative;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 40px;
+  align-items: end;
+  margin-bottom: 48px;
+}
+.hero-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.hero-num::after {
+  content: ''; flex: 1; height: 1px; background: var(--line-2);
+  max-width: 200px;
+}
+.hero-title {
+  font-family: 'Pretendard', sans-serif;
+  font-size: clamp(44px, 6vw, 76px);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+  color: var(--ink-1);
+}
+.hero-title .it {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--blue);
+  letter-spacing: -0.02em;
+}
+.hero-side {
+  display: flex; flex-direction: column;
+  text-align: right;
+  gap: 4px;
+}
+.hero-side .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--ink-3);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.hero-side .val {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 28px; font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ink-1);
+}
+.hero-side .val.blue { color: var(--blue); }
+@media (max-width: 720px) {
+  .hero-grid { grid-template-columns: 1fr; align-items: start; }
+  .hero-side { text-align: left; }
+}
+
+.hero-sub {
+  font-size: 15px; color: var(--ink-3);
+  max-width: 560px;
+  margin-bottom: 36px;
+  line-height: 1.55;
+}
+
+/* search */
+.search-big {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1.5px solid var(--ink-1);
+  border-radius: 0;
+  box-shadow: 6px 6px 0 var(--ink-1);
+  transition: var(--t);
+  margin-bottom: 20px;
+}
+.search-big:focus-within {
+  box-shadow: 6px 6px 0 var(--blue);
+  border-color: var(--blue);
+}
+.search-big .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-3);
+  padding: 0 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-right: 1px solid var(--line);
+  flex-shrink: 0;
+  height: 100%; display: flex; align-items: center;
+  align-self: stretch;
+}
+.search-big input {
+  flex: 1;
+  background: transparent;
+  border: none; outline: none;
+  padding: 18px 16px;
+  font: inherit;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  color: var(--ink-1);
+}
+.search-big input::placeholder { color: var(--ink-4); font-style: italic; font-family: 'Instrument Serif', serif; font-size: 19px; }
+.search-big button {
+  background: var(--blue);
+  color: white;
+  border: none;
+  align-self: stretch;
+  padding: 0 28px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  display: flex; align-items: center; gap: 8px;
+  transition: var(--t);
+}
+.search-big button:hover { background: var(--blue-2); }
+.search-big button svg { width: 14px; height: 14px; }
+
+.hero-foot {
+  display: flex; align-items: center; gap: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.hero-foot button {
+  background: none; border: none; padding: 0;
+  font: inherit; font-size: 11px;
+  color: var(--blue); font-weight: 500;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+
+/* ──────────────────────────────────────── KEYWORDS */
+.kw-band {
+  max-width: 1320px; margin: 0 auto;
+  padding: 32px 32px 24px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+  align-items: baseline;
+}
+@media (max-width: 720px) { .kw-band { grid-template-columns: 1fr; gap: 12px; } }
+.kw-head {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 22px;
+  color: var(--ink-1);
+  letter-spacing: -0.01em;
+}
+.kw-head small {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-style: normal;
+  font-size: 10px;
+  color: var(--ink-4);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.kw-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
+.kw-chip {
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  font-weight: 500;
+  transition: var(--t);
+  letter-spacing: -0.005em;
+  display: inline-flex; align-items: baseline; gap: 6px;
+}
+.kw-chip .kw-cnt {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-4);
+  font-weight: 500;
+}
+.kw-chip:hover {
+  background: var(--ink-1);
+  border-color: var(--ink-1);
+  color: white;
+}
+.kw-chip:hover .kw-cnt { color: rgba(255,255,255,0.55); }
+.kw-chip.on {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+}
+.kw-chip.on .kw-cnt { color: rgba(255,255,255,0.65); }
+.kw-chip.tier-1 {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 6px 14px;
+  letter-spacing: -0.015em;
+  border-color: var(--ink-1);
+  color: var(--ink-1);
+}
+.kw-chip.tier-2 { font-size: 13px; font-weight: 600; padding: 5px 13px; }
+
+/* ──────────────────────────────────────── PRESET BAND */
+.preset-band {
+  max-width: 1320px; margin: 0 auto;
+  padding: 40px 32px 0;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+  align-items: stretch;
+}
+@media (max-width: 720px) { .preset-band { grid-template-columns: 1fr; gap: 12px; } }
+.preset-head {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+.preset-head small {
+  display: block;
+  font-family: 'JetBrains Mono', monospace; font-style: normal;
+  font-size: 10px; color: var(--ink-4);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  margin-top: 4px;
+}
+.preset-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0;
+  border-top: 1.5px solid var(--ink-1);
+  border-left: 1.5px solid var(--ink-1);
+}
+.preset {
+  background: transparent;
+  border: none;
+  border-right: 1.5px solid var(--ink-1);
+  border-bottom: 1.5px solid var(--ink-1);
+  padding: 14px 16px;
+  text-align: left;
+  cursor: pointer;
+  transition: var(--t);
+  display: flex; flex-direction: column;
+  gap: 4px;
+  position: relative;
+  font: inherit;
+  color: var(--ink-1);
+}
+.preset:hover { background: var(--blue); color: white; }
+.preset:hover .preset-num,
+.preset:hover .preset-sub { color: rgba(255,255,255,0.75); }
+.preset:hover .preset-arrow { transform: translateX(4px); opacity: 1; }
+.preset.on { background: var(--ink-1); color: white; }
+.preset.on .preset-num,
+.preset.on .preset-sub { color: rgba(255,255,255,0.6); }
+.preset-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-4);
+  letter-spacing: 0.06em;
+  transition: var(--t);
+}
+.preset-name {
+  font-size: 15px; font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.preset-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em; text-transform: uppercase;
+  margin-top: 2px;
+  transition: var(--t);
+}
+.preset-arrow {
+  position: absolute; top: 14px; right: 14px;
+  opacity: 0.3; transition: var(--t);
+  font-family: 'JetBrains Mono', monospace; font-size: 14px;
+}
+
+/* ──────────────────────────────────────── LAYOUT */
+.main {
+  max-width: 1320px; margin: 0 auto;
+  padding: 16px 32px 96px;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 40px;
+  align-items: start;
+}
+@media (max-width: 1024px) { .main { grid-template-columns: 1fr; gap: 24px; } }
+
+/* ──────────────────────────────────────── SIDEBAR */
+.side {
+  position: sticky;
+  top: 80px;
+  display: flex; flex-direction: column;
+  gap: 32px;
+}
+.side-block {}
+.side-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--ink-1);
+  padding-bottom: 6px;
+}
+.side-head h4 {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.side-head button {
+  background: none; border: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.side-head button:hover { color: var(--blue); }
+
+.field { margin-bottom: 16px; }
+.field-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-4);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.btn-stack { display: flex; flex-wrap: wrap; gap: 5px; }
+.btn-stack button {
+  background: transparent;
+  border: 1.5px solid var(--line-2);
+  padding: 5px 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  letter-spacing: -0.005em;
+  transition: var(--t);
+  border-radius: 999px;
+}
+.btn-stack button:hover { border-color: var(--ink-1); }
+.btn-stack button.on {
+  background: var(--ink-1);
+  border-color: var(--ink-1);
+  color: white;
+}
+
+.field select {
+  width: 100%; appearance: none;
+  background: transparent url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%235a5a5c' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>") no-repeat right 0 center;
+  border: none;
+  border-bottom: 1px solid var(--line-2);
+  padding: 6px 20px 6px 0;
+  font: inherit; font-size: 13px;
+  color: var(--ink-1);
+  outline: none;
+  transition: var(--t);
+}
+.field select:hover { border-bottom-color: var(--ink-1); }
+.field select:focus { border-bottom-color: var(--blue); }
+
+/* stat block (text-heavy) */
+.stat-list {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.stat-line {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--line);
+}
+.stat-line:last-child { border-bottom: none; padding-bottom: 0; }
+.stat-line .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--ink-3);
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.stat-line .val {
+  font-size: 18px; font-weight: 700;
+  letter-spacing: -0.02em;
+  font-feature-settings: 'tnum';
+}
+.stat-line .val.blue { color: var(--blue); }
+.stat-hero {
+  background: var(--ink-1);
+  color: white;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  display: flex; flex-direction: column;
+  gap: 2px;
+}
+.stat-hero .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.stat-hero .val {
+  font-size: 28px; font-weight: 700;
+  letter-spacing: -0.03em;
+  color: white;
+  font-feature-settings: 'tnum';
+  line-height: 1.1;
+}
+.stat-hero .val .unit {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+/* ──────────────────────────────────────── TREND CHART (sidebar) */
+.trend-wrap {
+  background: var(--paper-2);
+  padding: 14px 14px 12px;
+  position: relative;
+}
+.trend-svg {
+  display: block; width: 100%; height: 60px;
+}
+.trend-svg .area { fill: var(--blue); opacity: 0.12; }
+.trend-svg .line { fill: none; stroke: var(--blue); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+.trend-svg .dot-last { fill: var(--blue); }
+.trend-svg .dot-last-ring { fill: none; stroke: var(--blue); stroke-width: 1.5; opacity: 0.3; }
+.trend-foot {
+  display: flex; justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--ink-3);
+  margin-top: 6px;
+  letter-spacing: 0.04em;
+}
+.trend-tip {
+  position: absolute; top: 8px; right: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--blue);
+  font-weight: 700;
+  text-align: right;
+  pointer-events: none;
+}
+.trend-tip small {
+  display: block;
+  color: var(--ink-4);
+  font-weight: 500;
+  font-size: 9px;
+}
+
+/* bars (editorial style) */
+.bars { display: flex; flex-direction: column; gap: 12px; }
+.bar-item {}
+.bar-top {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.bar-rank {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--ink-4);
+  letter-spacing: 0.04em;
+  margin-right: 6px;
+}
+.bar-name {
+  font-size: 12px; font-weight: 500;
+  color: var(--ink-1);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  flex: 1;
+}
+.bar-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--ink-3);
+  font-weight: 500;
+}
+.bar-line {
+  height: 2px;
+  background: var(--paper-3);
+}
+.bar-line-fill {
+  height: 100%;
+  background: var(--blue);
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+
+/* ──────────────────────────────────────── TOOLBAR */
+.toolbar {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--ink-1);
+  gap: 12px; flex-wrap: wrap;
+}
+.tool-count {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 32px;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.tool-count strong {
+  font-family: 'Pretendard', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-feature-settings: 'tnum';
+}
+.tool-count em {
+  color: var(--blue);
+  font-style: italic;
+}
+.tool-count small {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-style: normal;
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+.tool-right {
+  display: flex; align-items: center; gap: 8px;
+  padding-bottom: 2px;
+}
+.tool-select {
+  appearance: none;
+  background: transparent url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%232a2a2c' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>") no-repeat right 4px center;
+  border: none;
+  border-bottom: 1.5px solid var(--ink-1);
+  padding: 4px 22px 4px 4px;
+  font: inherit; font-size: 13px; font-weight: 500;
+  color: var(--ink-1);
+  letter-spacing: -0.01em;
+}
+.view-tog { display: flex; gap: 0; border: 1.5px solid var(--ink-1); }
+.view-tog button {
+  background: transparent; border: none;
+  padding: 6px 10px;
+  color: var(--ink-1);
+  transition: var(--t);
+  display: flex; align-items: center; justify-content: center;
+  border-right: 1px solid var(--ink-1);
+}
+.view-tog button:last-child { border-right: none; }
+.view-tog button.on { background: var(--ink-1); color: white; }
+.view-tog svg { width: 14px; height: 14px; }
+
+.btn-export {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--ink-1); color: white;
+  border: none;
+  padding: 7px 14px;
+  font-size: 12.5px; font-weight: 500;
+  transition: var(--t);
+}
+.btn-export:hover { background: var(--blue); }
+
+/* ──────────────────────────────────────── LIST (numbered, editorial) */
+.list { display: flex; flex-direction: column; }
+.row {
+  display: grid;
+  grid-template-columns: 40px 320px 1fr auto;
+  gap: 24px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: var(--t);
+  align-items: start;
+}
+.row:hover { background: rgba(26,62,255,0.025); }
+.row:hover .row-rank { color: var(--blue); }
+.row:hover .row-title { color: var(--blue-2); }
+
+.row-rank {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink-4);
+  font-feature-settings: 'tnum';
+  letter-spacing: -0.02em;
+  padding-top: 2px;
+  transition: var(--t);
+}
+.row-thumb {
+  position: relative;
+  aspect-ratio: 16/9;
+  background: var(--paper-3);
+  overflow: hidden;
+}
+.row-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s cubic-bezier(.4,0,.2,1); }
+.row:hover .row-thumb img { transform: scale(1.04); }
+.row-thumb-ph {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-4); font-size: 24px;
+}
+.thumb-flag {
+  position: absolute; top: 10px; left: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; font-weight: 600;
+  padding: 3px 8px;
+  background: var(--ink-1); color: white;
+  letter-spacing: 0.04em;
+}
+.thumb-flag.shorts { background: var(--blue); }
+
+.row-body { display: flex; flex-direction: column; min-width: 0; }
+.row-meta {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.row-meta .sep { width: 4px; height: 4px; background: var(--ink-5); border-radius: 50%; }
+.row-meta .tag-org { color: var(--blue); font-weight: 600; }
+.row-meta .tag-org.local { color: oklch(0.55 0.13 60); }
+.row-title {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.3;
+  color: var(--ink-1);
+  margin-bottom: 12px;
+  transition: var(--t);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.row-stats {
+  display: flex; align-items: center; gap: 24px;
+  margin-top: auto;
+}
+.row-stat .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px; color: var(--ink-4);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  display: block;
+}
+.row-stat .val {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 17px; font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink-1);
+  font-feature-settings: 'tnum';
+}
+.row-stat:first-child .val { color: var(--blue); }
+
+.row-action {
+  padding-top: 4px;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+}
+.row-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent;
+  border: 1.5px solid var(--ink-1);
+  color: var(--ink-1); text-decoration: none;
+  padding: 6px 12px;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: -0.005em;
+  transition: var(--t);
+}
+.row-link:hover { background: var(--ink-1); color: white; }
+
+@media (max-width: 900px) {
+  .row { grid-template-columns: 32px 1fr; }
+  .row-thumb { grid-column: 2; max-width: 280px; }
+  .row-body { grid-column: 2; }
+  .row-action { grid-column: 2; align-items: flex-start; }
+}
+
+/* ──────────────────────────────────────── CARD GRID (refined) */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+.card {
+  background: white;
+  cursor: pointer;
+  border: 1.5px solid var(--ink-1);
+  transition: var(--t);
+  padding: 0;
+  display: flex; flex-direction: column;
+  position: relative;
+  box-shadow: 4px 4px 0 transparent;
+}
+.card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--blue);
+}
+.card:hover .card-thumb img { transform: scale(1.05); }
+.card-thumb {
+  position: relative;
+  aspect-ratio: 16/9;
+  background: var(--paper-3);
+  overflow: hidden;
+  border-bottom: 1.5px solid var(--ink-1);
+}
+.card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s cubic-bezier(.4,0,.2,1); }
+.card-body {
+  padding: 16px 18px 18px;
+  display: flex; flex-direction: column;
+  flex: 1;
+}
+.card-tag-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+.card-rank {
+  font-weight: 700;
+  color: var(--ink-1);
+  font-size: 11px;
+}
+.card-tag-org {
+  font-weight: 600;
+  color: var(--blue);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+  text-align: right;
+}
+.card-tag-org.local { color: oklch(0.55 0.13 60); }
+.card-title {
+  font-size: 17px; font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  margin-bottom: 14px;
+  min-height: 2.7em;
+  color: var(--ink-1);
+}
+.card-meta-row {
+  display: flex; align-items: center;
+  gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.card-meta-row .sep { width: 3px; height: 3px; background: var(--ink-5); border-radius: 50%; }
+.card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  gap: 6px;
+}
+.card-stats .cs { display: flex; flex-direction: column; gap: 2px; }
+.card-stats .cs .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--ink-4);
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.card-stats .cs .val {
+  font-size: 15px; font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink-1);
+  font-feature-settings: 'tnum';
+}
+.card-stats .cs:first-child .val { color: var(--blue); }
+
+/* ──────────────────────────────────────── TABLE (refined) */
+.tbl-wrap {
+  overflow-x: auto;
+  border: 1.5px solid var(--ink-1);
+  background: white;
+  box-shadow: 4px 4px 0 var(--ink-1);
+}
+table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; }
+thead { background: var(--paper-2); }
+th {
+  background: var(--paper-2);
+  color: var(--ink-2);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1.5px solid var(--ink-1);
+  user-select: none;
+  white-space: nowrap;
+}
+th[data-sort] { cursor: pointer; transition: var(--t); }
+th[data-sort]:hover { color: var(--blue); }
+th.sorted {
+  color: var(--blue);
+  background: white;
+  border-bottom-color: var(--blue);
+}
+th.sorted::after {
+  content: '▼';
+  font-size: 9px;
+  margin-left: 4px;
+}
+td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+tr { cursor: pointer; transition: background .12s; }
+tr:last-child td { border-bottom: none; }
+tbody tr:nth-child(even) { background: var(--paper); }
+tbody tr:hover { background: var(--blue-tint); }
+tbody tr:hover td.tbl-title-cell { color: var(--blue-2); }
+td.num { text-align: right; font-feature-settings: 'tnum'; font-weight: 700; }
+td.num-strong { color: var(--blue); }
+td.tbl-rank-cell {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-4);
+  font-weight: 500;
+  width: 36px;
+  text-align: right;
+  padding-right: 8px;
+}
+td.tbl-title-cell { font-weight: 500; letter-spacing: -0.01em; transition: color .15s; }
+.tbl-thumb {
+  width: 64px; height: 36px; overflow: hidden; background: var(--paper-3);
+  border: 1px solid var(--line);
+}
+.tbl-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.tbl-spark {
+  display: inline-block;
+  width: 56px; height: 16px;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+.tbl-spark path { fill: none; stroke: var(--blue); stroke-width: 1.4; }
+
+/* badges */
+.badge {
+  display: inline-flex; align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; font-weight: 600;
+  padding: 2px 7px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  white-space: nowrap;
+}
+.badge.shorts { background: var(--blue); color: white; }
+.badge.normal { background: var(--paper-3); color: var(--ink-2); }
+.badge.central { background: var(--ink-1); color: white; }
+.badge.local { background: var(--paper-3); color: var(--ink-2); }
+
+mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-weight: 700; }
+
+/* ──────────────────────────────────────── PAGINATION */
+.pager {
+  display: flex; justify-content: center; align-items: center;
+  gap: 0;
+  margin-top: 48px;
+  border-top: 1px solid var(--ink-1);
+  padding-top: 24px;
+}
+.pg {
+  min-width: 36px; height: 36px;
+  background: transparent;
+  border: 1.5px solid transparent;
+  font: inherit; font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  color: var(--ink-2);
+  transition: var(--t);
+  padding: 0 8px;
+  margin: 0 2px;
+}
+.pg:hover:not(:disabled):not(.on) { color: var(--blue); }
+.pg.on {
+  border-color: var(--ink-1);
+  background: var(--ink-1); color: white;
+  font-weight: 600;
+}
+.pg:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ──────────────────────────────────────── EMPTY */
+.empty {
+  padding: 88px 24px;
+  text-align: center;
+  border: 1.5px solid var(--ink-1);
+}
+.empty-mark {
+  font-family: 'Instrument Serif', serif; font-style: italic;
+  font-size: 64px; color: var(--ink-1); line-height: 1;
+  margin-bottom: 16px;
+}
+.empty h3 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+.empty p { font-size: 13px; color: var(--ink-3); }
+
+/* ──────────────────────────────────────── MODAL */
+.modal-bg {
+  display: none;
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(14,14,16,0.6);
+  backdrop-filter: blur(8px);
+  align-items: center; justify-content: center;
+  padding: 24px;
+}
+.modal-bg.open { display: flex; }
+.modal {
+  background: white;
+  width: 100%; max-width: 720px;
+  border: 1.5px solid var(--ink-1);
+  box-shadow: 12px 12px 0 var(--blue);
+  overflow: hidden;
+  animation: modal-in .25s cubic-bezier(.34,1.4,.64,1);
+  position: relative;
+}
+@keyframes modal-in {
+  from { transform: translate(6px, 6px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.modal-close {
+  position: absolute; top: 12px; right: 12px;
+  width: 32px; height: 32px;
+  background: white;
+  border: 1.5px solid var(--ink-1);
+  font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2;
+  transition: var(--t);
+}
+.modal-close:hover { background: var(--blue); color: white; border-color: var(--blue); }
+.modal-thumb { position: relative; aspect-ratio: 16/9; background: #000; }
+.modal-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.modal-yt {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.2);
+  text-decoration: none;
+}
+.modal-yt:hover { background: rgba(0,0,0,0.4); }
+.modal-yt .play {
+  width: 72px; height: 72px;
+  background: var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+}
+.modal-yt:hover .play { transform: scale(1.08); }
+.modal-yt .play svg { color: white; margin-left: 4px; }
+.modal-info { padding: 28px 28px 28px; }
+.modal-badges { display: flex; gap: 6px; margin-bottom: 12px; }
+.modal-title {
+  font-size: 24px; font-weight: 700;
+  letter-spacing: -0.025em; line-height: 1.3;
+  margin-bottom: 8px;
+}
+.modal-org { font-size: 13px; color: var(--ink-3); margin-bottom: 22px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em; }
+.modal-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  border-top: 1.5px solid var(--ink-1);
+  border-bottom: 1.5px solid var(--ink-1);
+}
+.ms {
+  padding: 14px 16px;
+  border-right: 1px solid var(--line);
+}
+.ms:last-child { border-right: none; }
+.ms .ml {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--ink-3); margin-bottom: 4px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.ms .mv { font-size: 22px; font-weight: 700; font-feature-settings: 'tnum'; letter-spacing: -0.02em; }
+.ms:first-child .mv { color: var(--blue); }
+.modal-foot { display: flex; gap: 8px; align-items: center; margin-top: 20px; }
+.modal-yt-link {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--ink-1); color: white;
+  padding: 13px;
+  font-size: 14px; font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  transition: var(--t);
+}
+.modal-yt-link:hover { background: var(--blue); }
+.modal-week {
+  padding: 13px 16px;
+  border: 1.5px solid var(--ink-1);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--ink-2);
+  white-space: nowrap;
+}
+
+/* ──────────────────────────────────────── DB MODAL */
+.db-modal {
+  display: none;
+  position: fixed; inset: 0; z-index: 1500;
+  background: rgba(14,14,16,0.7);
+  backdrop-filter: blur(8px);
+  align-items: center; justify-content: center;
+  padding: 24px;
+}
+.db-modal.open { display: flex; }
+.db-box {
+  background: white;
+  border: 1.5px solid var(--ink-1);
+  box-shadow: 10px 10px 0 var(--blue);
+  width: 100%; max-width: 460px;
+  padding: 28px;
+  animation: modal-in .25s cubic-bezier(.34,1.4,.64,1);
+}
+.db-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1.5px solid var(--ink-1); }
+.db-title {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 24px;
+  letter-spacing: -0.01em;
+}
+.db-title small {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-style: normal;
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.db-close {
+  width: 28px; height: 28px;
+  background: white; border: 1.5px solid var(--ink-1);
+  font-weight: 600;
+  transition: var(--t);
+}
+.db-close:hover { background: var(--blue); color: white; border-color: var(--blue); }
+.db-drop {
+  border: 1.5px dashed var(--ink-1);
+  padding: 28px 20px;
+  text-align: center;
+  transition: var(--t);
+  position: relative;
+  background: var(--paper);
+}
+.db-drop:hover, .db-drop.over { background: var(--blue-tint); border-color: var(--blue); }
+.db-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.db-drop-icon { font-size: 28px; margin-bottom: 8px; }
+.db-drop-text { font-size: 14px; font-weight: 600; }
+.db-drop-sub { font-size: 12px; color: var(--ink-3); font-family: 'JetBrains Mono', monospace; }
+.db-hint {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--ink-3);
+  text-align: center; margin: 12px 0 16px;
+}
+.db-divider { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; text-align: center; margin: 14px 0 12px; }
+.db-url { display: flex; gap: 6px; }
+.db-url input {
+  flex: 1; background: white; border: 1.5px solid var(--ink-1);
+  padding: 10px 12px;
+  font: inherit; font-size: 12px; font-family: 'JetBrains Mono', monospace;
+  outline: none;
+}
+.db-url input:focus { border-color: var(--blue); box-shadow: 4px 4px 0 var(--blue); }
+.db-url button {
+  background: var(--ink-1); color: white; border: none;
+  padding: 10px 18px;
+  font: inherit; font-size: 12px; font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.db-url button:hover { background: var(--blue); }
+.db-status { margin-top: 12px; font-size: 12px; color: var(--ink-3); text-align: center; min-height: 1.4em; font-family: 'JetBrains Mono', monospace; }
+.db-prog { display: none; background: var(--paper-3); height: 3px; margin-top: 6px; overflow: hidden; }
+.db-prog-fill { height: 100%; background: var(--blue); width: 0; transition: width .3s; }
+
+/* ──────────────────────────────────────── CONVERTER MODAL */
+.conv-modal {
+  display: none;
+  position: fixed; inset: 0; z-index: 1500;
+  background: rgba(14,14,16,0.75);
+  backdrop-filter: blur(8px);
+  align-items: flex-start; justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+}
+.conv-modal.open { display: flex; }
+.conv-box {
+  background: white;
+  border: 1.5px solid var(--ink-1);
+  box-shadow: 10px 10px 0 var(--blue);
+  width: 100%; max-width: 860px;
+  padding: 28px;
+  margin: auto;
+  animation: modal-in .25s cubic-bezier(.34,1.4,.64,1);
+}
+.conv-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1.5px solid var(--ink-1); }
+.conv-title {
+  font-family: 'Instrument Serif', serif; font-style: italic;
+  font-size: 24px; letter-spacing: -0.01em;
+}
+.conv-title small {
+  display: block; font-family: 'JetBrains Mono', monospace; font-style: normal;
+  font-size: 10px; color: var(--ink-3); letter-spacing: 0.06em; text-transform: uppercase;
+}
+.conv-close {
+  width: 28px; height: 28px;
+  background: white; border: 1.5px solid var(--ink-1); font-weight: 600; transition: var(--t);
+}
+.conv-close:hover { background: var(--blue); color: white; border-color: var(--blue); }
+
+.conv-drop {
+  border: 1.5px dashed var(--ink-1);
+  padding: 24px 20px;
+  text-align: center; cursor: pointer;
+  transition: var(--t); position: relative; background: var(--paper);
+}
+.conv-drop:hover, .conv-drop.over { background: var(--blue-tint); border-color: var(--blue); }
+.conv-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.conv-drop-icon { font-size: 24px; margin-bottom: 6px; }
+.conv-drop-text { font-size: 14px; font-weight: 600; }
+.conv-drop-sub { font-size: 11px; color: var(--ink-3); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em; }
+
+.conv-status { margin-top: 10px; font-size: 11px; color: var(--ink-3); text-align: center; font-family: 'JetBrains Mono', monospace; min-height: 1.4em; }
+
+/* week selector */
+.conv-weeks-wrap { margin-top: 20px; }
+.conv-section-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--ink-4); letter-spacing: 0.08em; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.conv-week-tabs {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 14px;
+}
+.conv-week-tab {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  padding: 4px 8px; border: 1px solid var(--line-2); background: var(--paper);
+  cursor: pointer; transition: var(--t); letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.conv-week-tab:hover { border-color: var(--ink-3); }
+.conv-week-tab.active { background: var(--ink-1); color: white; border-color: var(--ink-1); }
+.conv-week-tab.has-data { border-color: var(--blue); color: var(--blue); }
+.conv-week-tab.active.has-data { background: var(--blue); color: white; border-color: var(--blue); }
+
+/* column check table */
+.conv-table-wrap { overflow-x: auto; }
+.conv-col-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 12px;
+}
+.conv-col-table th {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 0.06em; color: var(--ink-3); text-transform: uppercase;
+  padding: 6px 8px; text-align: left;
+  border-bottom: 1.5px solid var(--ink-1);
+  white-space: nowrap;
+}
+.conv-col-table td {
+  padding: 7px 8px; border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.conv-col-table tr.inactive td { color: var(--ink-5); }
+.conv-col-table tr.inactive .col-check { opacity: 0.3; }
+.col-name { font-weight: 600; font-size: 12px; }
+.col-check {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px;
+  border-radius: 2px;
+  font-size: 11px; font-weight: 700;
+}
+.col-check.ok { background: #d4f0d8; color: #1a7a2a; }
+.col-check.warn { background: #fff3cd; color: #856404; }
+.col-check.miss { background: var(--paper-3); color: var(--ink-4); }
+.col-sample { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-3); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.col-coverage { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+.conv-summary {
+  margin-top: 16px; padding: 12px 14px;
+  background: var(--paper-2); border: 1px solid var(--line-2);
+  display: flex; gap: 20px; flex-wrap: wrap;
+}
+.conv-summary-item { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-3); }
+.conv-summary-item strong { color: var(--ink-1); font-size: 14px; display: block; }
+
+.conv-actions { display: flex; gap: 8px; margin-top: 16px; }
+.conv-btn {
+  font: inherit; font-size: 12px; font-weight: 600; letter-spacing: -0.01em;
+  padding: 10px 18px; border: 1.5px solid var(--ink-1); background: white;
+  cursor: pointer; transition: var(--t);
+}
+.conv-btn:hover { background: var(--paper-2); }
+.conv-btn.primary { background: var(--ink-1); color: white; }
+.conv-btn.primary:hover { background: var(--blue); border-color: var(--blue); }
+.conv-btn:disabled { opacity: 0.4; cursor: default; }
+
+/* drag overlay */
+.drag-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(26,62,255,0.08);
+  backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+.drag-overlay.on { display: flex; }
+.drag-overlay-box {
+  background: white;
+  border: 2px dashed var(--blue);
+  padding: 48px 64px;
+  text-align: center;
+  box-shadow: 10px 10px 0 var(--blue);
+}
+.drag-overlay-icon { font-size: 36px; margin-bottom: 8px; }
+.drag-overlay-text { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+.drag-overlay-sub { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-3); margin-top: 4px; letter-spacing: 0.04em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<!-- drag overlay -->
+<div class="drag-overlay" id="dragOverlay">
+  <div class="drag-overlay-box">
+    <div class="drag-overlay-icon">📂</div>
+    <div class="drag-overlay-text">data.json 놓기</div>
+    <div class="drag-overlay-sub">DROP TO LOAD</div>
+  </div>
+</div>
+
+<!-- DB modal -->
+<div class="db-modal" id="dbModal">
+  <div class="db-box">
+    <div class="db-head">
+      <div class="db-title">Load DB<small>DATA SOURCE</small></div>
+      <button class="db-close" onclick="closeDbModal()">✕</button>
+    </div>
+    <label class="db-drop" id="modalDrop">
+      <input type="file" id="modalJsonFile" accept=".json">
+      <div class="db-drop-icon">🗂️</div>
+      <div class="db-drop-text">data.json 드래그 또는 클릭</div>
+      <div class="db-drop-sub">DROP / CLICK</div>
+    </label>
+    <div class="db-hint">PAGE-WIDE DRAG SUPPORTED</div>
+    <div class="db-divider">— OR FETCH —</div>
+    <div class="db-url">
+      <input type="text" id="jsonUrl" placeholder="https://...data.json">
+      <button onclick="loadFromUrl()">FETCH</button>
+    </div>
+    <div class="db-status" id="modalStatus"></div>
+    <div class="db-prog" id="modalProg"><div class="db-prog-fill" id="modalProgFill"></div></div>
+  </div>
+</div>
+
+<!-- CONVERTER MODAL -->
+<div class="conv-modal" id="convModal">
+  <div class="conv-box">
+    <div class="conv-head">
+      <div class="conv-title">데이터 변환기<small>EXCEL → JSON CONVERTER</small></div>
+      <button class="conv-close" onclick="closeConvModal()">✕</button>
+    </div>
+
+    <label class="conv-drop" id="convDrop">
+      <input type="file" id="convFile" accept=".xlsx,.xls">
+      <div class="conv-drop-icon">📊</div>
+      <div class="conv-drop-text">엑셀 파일을 드래그하거나 클릭하여 선택</div>
+      <div class="conv-drop-sub">XLSX / XLS · DROP OR CLICK</div>
+    </label>
+    <div class="conv-status" id="convStatus"></div>
+
+    <div class="conv-weeks-wrap" id="convWeeksWrap" style="display:none">
+      <div class="conv-section-label">주차 선택 — WEEK SELECTOR</div>
+      <div class="conv-week-tabs" id="convWeekTabs"></div>
+
+      <div class="conv-section-label">컬럼 매핑 현황 — COLUMN MAPPING</div>
+      <div class="conv-table-wrap">
+        <table class="conv-col-table" id="convColTable">
+          <thead>
+            <tr>
+              <th>컬럼</th>
+              <th>JSON 키</th>
+              <th>상태</th>
+              <th>커버리지</th>
+              <th>샘플값</th>
+            </tr>
+          </thead>
+          <tbody id="convColBody"></tbody>
+        </table>
+      </div>
+
+      <div class="conv-summary" id="convSummary"></div>
+
+      <div class="conv-actions">
+        <button class="conv-btn primary" id="convExportBtn" onclick="convExportJSON()" disabled>JSON 내보내기 ↓</button>
+        <button class="conv-btn" onclick="closeConvModal()">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-in">
+    <span><span class="blue-dot"></span>LIVE / PUBLIC-SECTOR YOUTUBE ARCHIVE</span>
+    <span id="topbarDate"></span>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-in">
+    <a class="brand" href="#">
+      <div class="brand-mark"></div>
+      <div class="brand-text">
+        <span class="brand-name">잉크닷<em style="font-style:normal">.</em></span>
+        <span class="brand-sub">INKDOT · ARCHIVE</span>
+      </div>
+    </a>
+    <div class="hdr-right">
+      <span class="meta-text" id="headerMeta"></span>
+      <button class="btn-load" onclick="openConvModal()" style="margin-right:6px">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 1h6l2 2v8H2V1z"/><path d="M7 1v3h3M4 6h4M4 8h4"/></svg>
+        데이터 변환기
+      </button>
+      <button class="btn-load" onclick="openDbModal()">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 3a1 1 0 011-1h2.5l1 1H10a1 1 0 011 1v5a1 1 0 01-1 1H2a1 1 0 01-1-1V3z"/></svg>
+        DB 불러오기
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="hero-num">VOL.05 — ARCHIVE / 2026</div>
+      <h1 class="hero-title">공공기관<br>유튜브, <span class="it">전부</span><br>찾아 드립니다.</h1>
+    </div>
+    <div class="hero-side">
+      <span class="label">DATABASE</span>
+      <span class="val blue" id="heroBigCount">—</span>
+      <span class="label" style="margin-top:8px">SINCE 2021.08</span>
+      <span class="val" id="heroWeeks">—</span>
+    </div>
+  </div>
+
+  <p class="hero-sub">중앙기관과 지방기관이 매주 올리는 영상의 조회수·좋아요·댓글을 매주 수집해 보관합니다. 키워드로, 기관으로, 기간으로 — 원하는 방식으로 탐색하세요.</p>
+
+  <div class="search-big">
+    <span class="label">SEARCH</span>
+    <input type="text" id="searchInput" placeholder="키워드를 입력하세요" autocomplete="off">
+    <button onclick="doSearch()">
+      검색
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10M8 3l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+
+  <div class="hero-foot">
+    <span id="dbStatusBadge"></span>
+    <button onclick="openDbModal()">다른 DB 불러오기</button>
+  </div>
+</section>
+
+<!-- PRESETS -->
+<div class="preset-band">
+  <div class="preset-head">
+    Quick picks<small>PRESET SEARCHES</small>
+  </div>
+  <div class="preset-list" id="presetList"></div>
+</div>
+
+<!-- KEYWORDS -->
+<div class="kw-band">
+  <div class="kw-head">
+    Trending<small>POPULAR KEYWORDS</small>
+  </div>
+  <div class="kw-chips" id="keywordChips"></div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <aside class="side">
+    <!-- 필터 -->
+    <div class="side-block">
+      <div class="side-head">
+        <h4>FILTER</h4>
+        <button onclick="resetFilters()">RESET</button>
+      </div>
+
+      <div class="field">
+        <div class="field-label">기관 구분</div>
+        <div class="btn-stack" id="orgTypeSeg">
+          <button class="on" data-val="">전체</button>
+          <button data-val="중앙">중앙</button>
+          <button data-val="지방">지방</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">영상 유형</div>
+        <div class="btn-stack" id="vidTypeSeg">
+          <button class="on" data-val="">전체</button>
+          <button data-val="쇼츠">쇼츠</button>
+          <button data-val="일반">일반</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">기관명</div>
+        <select id="orgFilter" onchange="applyFilters()"><option value="">전체 기관</option></select>
+      </div>
+
+      <div class="field">
+        <div class="field-label">수집 기간</div>
+        <select id="yearFilter" onchange="applyFilters()"><option value="">전체 기간</option></select>
+      </div>
+    </div>
+
+    <!-- 통계 -->
+    <div class="side-block">
+      <div class="side-head"><h4>STATS</h4><span class="mono" style="font-size:10px;color:var(--ink-4)">SUMMARY</span></div>
+      <div class="stat-list" id="statMini"></div>
+    </div>
+
+    <!-- 주차별 추이 -->
+    <div class="side-block">
+      <div class="side-head"><h4>WEEKLY TREND</h4><span class="mono" style="font-size:10px;color:var(--ink-4)">VIEWS</span></div>
+      <div class="trend-wrap">
+        <div class="trend-tip" id="trendTip"></div>
+        <svg class="trend-svg" id="trendSvg" viewBox="0 0 200 60" preserveAspectRatio="none"></svg>
+        <div class="trend-foot" id="trendFoot"></div>
+      </div>
+    </div>
+
+    <!-- 차트 -->
+    <div class="side-block">
+      <div class="side-head"><h4>TOP CHANNELS</h4><span class="mono" style="font-size:10px;color:var(--ink-4)">BY VIEWS</span></div>
+      <div class="bars" id="topOrgChart"></div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="toolbar">
+      <div class="tool-count" id="resultCount"></div>
+      <div class="tool-right">
+        <select class="tool-select" id="sortSelect" onchange="applyFilters()">
+          <option value="views">조회수 높은순</option>
+          <option value="likes">좋아요 높은순</option>
+          <option value="comments">댓글 많은순</option>
+          <option value="newest">최신순</option>
+          <option value="oldest">오래된순</option>
+        </select>
+        <div class="view-tog">
+          <button class="on" id="btnList" onclick="setView('list')" title="리스트">
+            <svg viewBox="0 0 14 14" fill="currentColor"><rect x="0" y="1" width="14" height="2" rx="0"/><rect x="0" y="6" width="14" height="2" rx="0"/><rect x="0" y="11" width="14" height="2" rx="0"/></svg>
+          </button>
+          <button id="btnCard" onclick="setView('card')" title="카드">
+            <svg viewBox="0 0 14 14" fill="currentColor"><rect x="0" y="0" width="6" height="6"/><rect x="8" y="0" width="6" height="6"/><rect x="0" y="8" width="6" height="6"/><rect x="8" y="8" width="6" height="6"/></svg>
+          </button>
+          <button id="btnTable" onclick="setView('table')" title="표">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="0.5" y="1" width="13" height="12"/><path d="M0.5 5h13M0.5 9h13M5 1v12"/></svg>
+          </button>
+        </div>
+        <button class="btn-export" onclick="exportExcel()">EXPORT ↓</button>
+      </div>
+    </div>
+
+    <div id="resultArea"></div>
+    <div id="pagination"></div>
+  </main>
+</div>
+
+<!-- VIDEO MODAL -->
+<div class="modal-bg" id="videoModal" onclick="closeModal(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    <div class="modal-thumb">
+      <img id="modalThumb" alt="" style="display:none">
+      <a id="modalYtBtn" class="modal-yt" href="#" target="_blank" rel="noopener">
+        <div class="play"><svg width="24" height="24" viewBox="0 0 22 22" fill="currentColor"><path d="M8 5l11 6-11 6V5z"/></svg></div>
+      </a>
+    </div>
+    <div class="modal-info">
+      <div class="modal-badges" id="modalBadges"></div>
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-org" id="modalOrg"></div>
+      <div class="modal-stats">
+        <div class="ms"><div class="ml">VIEWS · 조회수</div><div class="mv" id="mViews"></div></div>
+        <div class="ms"><div class="ml">LIKES · 좋아요</div><div class="mv" id="mLikes"></div></div>
+        <div class="ms"><div class="ml">COMMENTS · 댓글</div><div class="mv" id="mComments"></div></div>
+      </div>
+      <div class="modal-foot">
+        <a class="modal-yt-link" id="modalLink" href="#" target="_blank" rel="noopener">
+          <span id="modalLinkText">YouTube에서 보기</span>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3h5v5M8 3L3 8" stroke-linecap="round"/></svg>
+        </a>
+        <span class="modal-week" id="modalWeek"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── State ───
+let DB = null;
+let filtered = [];
+let currentKeyword = '';
+let currentSort = 'views';
+let currentPage = 1;
+let currentView = 'list';
+let activeOrgType = '';
+let activeVidType = '';
+const PAGE_SIZE = 15;
+
+// ─── Topbar date ───
+(function () {
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('topbarDate').textContent = `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} · SEOUL`;
+})();
+
+// ─── DB Modal ───
+function openDbModal() { document.getElementById('dbModal').classList.add('open'); }
+function closeDbModal() { document.getElementById('dbModal').classList.remove('open'); }
+
+document.getElementById('modalJsonFile').addEventListener('change', e => {
+  const f = e.target.files[0]; if (f) loadJsonFile(f);
+});
+
+const modalDrop = document.getElementById('modalDrop');
+modalDrop.addEventListener('dragover', e => { e.preventDefault(); modalDrop.classList.add('over'); });
+modalDrop.addEventListener('dragleave', () => modalDrop.classList.remove('over'));
+modalDrop.addEventListener('drop', e => {
+  e.preventDefault(); modalDrop.classList.remove('over');
+  const f = e.dataTransfer.files[0]; if (f && f.name.endsWith('.json')) loadJsonFile(f);
+});
+
+document.addEventListener('dragenter', e => {
+  if ([...e.dataTransfer.types].includes('Files')) document.getElementById('dragOverlay').classList.add('on');
+});
+const dragOver = document.getElementById('dragOverlay');
+dragOver.addEventListener('dragover', e => e.preventDefault());
+dragOver.addEventListener('dragleave', e => { if (!e.relatedTarget) dragOver.classList.remove('on'); });
+dragOver.addEventListener('drop', e => {
+  e.preventDefault(); dragOver.classList.remove('on');
+  const f = e.dataTransfer.files[0]; if (f && f.name.endsWith('.json')) loadJsonFile(f);
+});
+
+function setModalStatus(msg, prog) {
+  document.getElementById('modalStatus').textContent = msg;
+  if (prog !== undefined) {
+    document.getElementById('modalProg').style.display = 'block';
+    document.getElementById('modalProgFill').style.width = prog + '%';
+  }
+}
+
+function loadJsonFile(file) {
+  setModalStatus('READING...', 30);
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      setModalStatus('PARSING...', 70);
+      const json = JSON.parse(e.target.result);
+      setModalStatus('DONE', 100);
+      setTimeout(() => { closeDbModal(); initApp(json); }, 200);
+    } catch (err) { setModalStatus('⚠ JSON ERROR: ' + err.message); }
+  };
+  r.readAsText(file);
+}
+
+async function loadFromUrl() {
+  const url = document.getElementById('jsonUrl').value.trim();
+  if (!url) return;
+  setModalStatus('FETCHING...', 20);
+  try {
+    const res = await fetch(url);
+    setModalStatus('PARSING...', 70);
+    const json = await res.json();
+    setModalStatus('DONE', 100);
+    setTimeout(() => { closeDbModal(); initApp(json); }, 200);
+  } catch (e) { setModalStatus('⚠ FAILED: ' + e.message); }
+}
+
+// ─── Auto load ───
+(async () => {
+  try {
+    const res = await fetch('./data.json');
+    if (!res.ok) { openDbModal(); return; }
+    initApp(await res.json());
+  } catch (e) { openDbModal(); }
+})();
+
+// ─── Data normalization ───
+// 2026년 1월부터 t 필드에 '중앙'/'지방'이 들어오고 ot가 비어있는 구조로 변경됨.
+// normalizeData()로 t/ot 를 일관된 형태로 정규화한다.
+function normalizeData(items) {
+  return items.map(d => {
+    const raw = Object.assign({}, d);
+    const t = (raw.t || '').trim();
+    const ot = (raw.ot || '').trim();
+    // 2026-01 이후: t가 '중앙' 또는 '지방'이면 구분 필드로 이동하고, 영상유형은 미상으로 처리
+    if ((t === '중앙' || t === '지방') && !ot) {
+      raw.ot = t;   // 기관구분
+      raw.t = '';   // 영상유형 불명 (쇼츠 여부 알 수 없음)
+    }
+    // 오타 보정
+    if (raw.t === '알번' || raw.t === '일반반') raw.t = '일반';
+    // URL 없는 항목은 명시적으로 빈 문자열 보장
+    if (!raw.u) raw.u = '';
+    // v가 null이거나 비정상(1억)이면 0 처리 (placeholder 값)
+    if (raw.v === null || raw.v === undefined) raw.v = 0;
+    return raw;
+  });
+}
+
+// ─── Init ───
+function initApp(json) {
+  DB = json;
+  DB.data = normalizeData(DB.data);
+  const m = DB.meta || {};
+  const totalCnt = (m.total || DB.data.length);
+  const totalStr = totalCnt.toLocaleString();
+  const weeksCnt = (m.weeks || []).length || (m.files || '?');
+  document.getElementById('headerMeta').textContent = `${totalStr} ITEMS · ${weeksCnt} WEEKS`;
+  document.getElementById('heroBigCount').textContent = fmtN(totalCnt);
+  document.getElementById('heroWeeks').textContent = `${weeksCnt} WEEKS`;
+  const badge = document.getElementById('dbStatusBadge');
+  if (badge) badge.textContent = `DB / ${totalStr} ITEMS · ${weeksCnt} WEEKS`;
+
+  const orgSel = document.getElementById('orgFilter');
+  orgSel.innerHTML = '<option value="">전체 기관</option>';
+  (m.orgs || [...new Set(DB.data.map(d => d.o))].filter(Boolean).sort()).forEach(o => {
+    const opt = document.createElement('option'); opt.value = o; opt.textContent = o; orgSel.appendChild(opt);
+  });
+
+  const yearSel = document.getElementById('yearFilter');
+  yearSel.innerHTML = '<option value="">전체 기간</option>';
+  const years = m.years || [...new Set(DB.data.map(d => d.yw ? d.yw.slice(0,4) : ''))].filter(Boolean).sort();
+  years.forEach(y => { const opt = document.createElement('option'); opt.value = y; opt.textContent = y + '년'; yearSel.appendChild(opt); });
+
+  currentKeyword = '';
+  currentPage = 1;
+  document.getElementById('searchInput').value = '';
+  activeOrgType = ''; activeVidType = '';
+
+  setView('list');
+  buildKeywordChips();
+  buildPresets();
+  applyFilters();
+}
+
+// segments
+document.querySelectorAll('#orgTypeSeg button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#orgTypeSeg button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on'); activeOrgType = b.dataset.val;
+    currentPage = 1; applyFilters();
+  });
+});
+document.querySelectorAll('#vidTypeSeg button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#vidTypeSeg button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on'); activeVidType = b.dataset.val;
+    currentPage = 1; applyFilters();
+  });
+});
+
+// keywords
+function buildKeywordChips() {
+  const stopwords = new Set(['수','및','을','를','이','가','은','는','의','에','서','로','과','와','한','하는','있는','위한','대한','관한','통한','그','더','이번','올해','우리','우리나라','공식','영상','동영상','소개','안내','채널','하여','되는','되어','하고','합니다','있습니다','입니다','했습니다','하겠습니다','드립니다','말씀','행사','관련','진행','실시','개최','운영','지원','시행','추진','발표','현장','참여','함께','위해','통해','대해','관해']);
+  const freq = {};
+  DB.data.forEach(d => {
+    if (!d.ti) return;
+    const words = d.ti.replace(/[()[\]「」『』【】《》〈〉\-_|#@!?.,·…~]/g,' ').split(/\s+/).filter(w => w.length >= 2 && !stopwords.has(w) && !/^\d+$/.test(w));
+    words.forEach(w => { freq[w] = (freq[w]||0) + 1; });
+  });
+  const top = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0,18);
+  document.getElementById('keywordChips').innerHTML =
+    top.map(([w, n], i) => {
+      const tier = i < 3 ? 'tier-1' : i < 8 ? 'tier-2' : '';
+      const esW = esc(w);
+      return `<button class="kw-chip ${tier}" data-kw="${esW}" onclick="setKeyword('${esW.replace(/'/g,"\\'")}')">${esW}<span class="kw-cnt">${n}</span></button>`;
+    }).join('');
+}
+
+// presets
+const PRESETS = [
+  { id: 'topweek', name: '이번 주 인기',  sub: 'TOP THIS WEEK',  apply: () => ({ year: latestYear(), latestWeekOnly: true, sort: 'views' }) },
+  { id: 'topmonth', name: '이달 TOP 영상', sub: 'TOP THIS MONTH', apply: () => ({ year: latestYear(), recentWeeks: 4, sort: 'views' }) },
+  { id: 'shorts', name: '쇼츠 베스트',     sub: 'BEST SHORTS',    apply: () => ({ vidType: '쇼츠', sort: 'views' }) },
+  { id: 'comm', name: '댓글 많은 영상',    sub: 'MOST DISCUSSED', apply: () => ({ sort: 'comments' }) },
+  { id: 'central', name: '중앙기관 TOP',  sub: 'CENTRAL ORGS',   apply: () => ({ orgType: '중앙', sort: 'views' }) },
+  { id: 'local', name: '지방기관 TOP',    sub: 'LOCAL ORGS',     apply: () => ({ orgType: '지방', sort: 'views' }) },
+];
+let activePreset = null;
+let presetExtras = {}; // latestWeekOnly / recentWeeks runtime carrier
+
+function latestYear() {
+  if (!DB) return '';
+  const yrs = [...new Set(DB.data.map(d => d.yw && d.yw.slice(0,4)).filter(Boolean))].sort();
+  return yrs[yrs.length-1] || '';
+}
+function latestWeek() {
+  if (!DB) return '';
+  return DB.data.map(d => d.yw).filter(Boolean).sort().slice(-1)[0] || '';
+}
+
+function buildPresets() {
+  const el = document.getElementById('presetList');
+  el.innerHTML = PRESETS.map((p, i) => `
+    <button class="preset" data-id="${p.id}" onclick="applyPreset('${p.id}')">
+      <span class="preset-arrow">↗</span>
+      <span class="preset-num">P / ${String(i+1).padStart(2,'0')}</span>
+      <span class="preset-name">${p.name}</span>
+      <span class="preset-sub">${p.sub}</span>
+    </button>`).join('');
+}
+
+function applyPreset(id) {
+  const p = PRESETS.find(x => x.id === id);
+  if (!p) return;
+  // toggle off if same preset clicked
+  if (activePreset === id) {
+    activePreset = null; presetExtras = {};
+    document.querySelectorAll('.preset').forEach(b => b.classList.remove('on'));
+    resetFilters();
+    return;
+  }
+  activePreset = id;
+  document.querySelectorAll('.preset').forEach(b => b.classList.toggle('on', b.dataset.id === id));
+
+  // reset other filters first (but preserve preset)
+  activeOrgType = ''; activeVidType = '';
+  document.querySelectorAll('#orgTypeSeg button').forEach((x,i) => x.classList.toggle('on', i === 0));
+  document.querySelectorAll('#vidTypeSeg button').forEach((x,i) => x.classList.toggle('on', i === 0));
+  document.getElementById('orgFilter').value = '';
+  document.getElementById('yearFilter').value = '';
+  document.getElementById('searchInput').value = '';
+  document.querySelectorAll('.kw-chip').forEach(c => c.classList.remove('on'));
+  currentKeyword = ''; presetExtras = {};
+
+  const opts = p.apply();
+  if (opts.vidType) {
+    activeVidType = opts.vidType;
+    document.querySelectorAll('#vidTypeSeg button').forEach(b => b.classList.toggle('on', b.dataset.val === opts.vidType));
+  }
+  if (opts.orgType) {
+    activeOrgType = opts.orgType;
+    document.querySelectorAll('#orgTypeSeg button').forEach(b => b.classList.toggle('on', b.dataset.val === opts.orgType));
+  }
+  if (opts.year) document.getElementById('yearFilter').value = opts.year;
+  if (opts.sort) document.getElementById('sortSelect').value = opts.sort;
+  if (opts.latestWeekOnly) presetExtras.latestWeek = latestWeek();
+  if (opts.recentWeeks) presetExtras.recentWeeks = opts.recentWeeks;
+
+  currentPage = 1;
+  applyFilters();
+}
+
+function setKeyword(w) {
+  document.getElementById('searchInput').value = w;
+  doSearch();
+}
+function doSearch() {
+  currentKeyword = document.getElementById('searchInput').value.trim();
+  currentPage = 1;
+  document.querySelectorAll('.kw-chip').forEach(c => c.classList.toggle('on', c.dataset.kw === currentKeyword));
+  applyFilters();
+}
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+// filter
+function applyFilters() {
+  if (!DB) return;
+  currentSort = document.getElementById('sortSelect').value;
+  const org = document.getElementById('orgFilter').value;
+  const year = document.getElementById('yearFilter').value;
+
+  let res = DB.data;
+  if (currentKeyword) {
+    const kw = currentKeyword.toLowerCase();
+    res = res.filter(d => d.ti && d.ti.toLowerCase().includes(kw));
+  }
+  if (activeOrgType) res = res.filter(d => d.ot === activeOrgType);
+  if (activeVidType) res = res.filter(d => d.t === activeVidType || (activeVidType === '쇼츠' && d.t === '쇼츠'));
+  if (org) res = res.filter(d => d.o === org);
+  if (year) res = res.filter(d => d.yw && d.yw.startsWith(year));
+  if (presetExtras.latestWeek) res = res.filter(d => d.yw === presetExtras.latestWeek);
+  if (presetExtras.recentWeeks) {
+    const weeks = [...new Set(DB.data.map(d => d.yw).filter(Boolean))].sort().slice(-presetExtras.recentWeeks);
+    const set = new Set(weeks);
+    res = res.filter(d => set.has(d.yw));
+  }
+
+  res = [...res].sort((a,b) => {
+    if (currentSort === 'views') return b.v - a.v;
+    if (currentSort === 'likes') return b.l - a.l;
+    if (currentSort === 'comments') return b.c - a.c;
+    if (currentSort === 'newest') return (b.yw||'').localeCompare(a.yw||'') || (b.wk||0)-(a.wk||0);
+    if (currentSort === 'oldest') return (a.yw||'').localeCompare(b.yw||'') || (a.wk||0)-(b.wk||0);
+    return 0;
+  });
+
+  filtered = res;
+  updateStats(); renderResult(); renderTopOrgChart(); renderTrendChart();
+}
+
+function resetFilters() {
+  activeOrgType = ''; activeVidType = '';
+  activePreset = null; presetExtras = {};
+  document.querySelectorAll('.preset').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('#orgTypeSeg button').forEach((x,i) => x.classList.toggle('on', i === 0));
+  document.querySelectorAll('#vidTypeSeg button').forEach((x,i) => x.classList.toggle('on', i === 0));
+  document.getElementById('orgFilter').value = '';
+  document.getElementById('yearFilter').value = '';
+  document.getElementById('searchInput').value = '';
+  document.querySelectorAll('.kw-chip').forEach(c => c.classList.remove('on'));
+  currentKeyword = ''; currentPage = 1;
+  applyFilters();
+}
+
+// stats
+function updateStats() {
+  const tv = filtered.reduce((s,d) => s+d.v, 0);
+  const tl = filtered.reduce((s,d) => s+d.l, 0);
+  const tc = filtered.reduce((s,d) => s+d.c, 0);
+  const shorts = filtered.filter(d => d.t==='쇼츠').length;
+  document.getElementById('statMini').innerHTML = `
+    <div class="stat-hero">
+      <span class="lbl">RESULTS · 검색 결과</span>
+      <span class="val">${filtered.length.toLocaleString()}<span class="unit">건</span></span>
+    </div>
+    <div class="stat-line"><span class="lbl">조회수</span><span class="val">${fmtN(tv)}</span></div>
+    <div class="stat-line"><span class="lbl">좋아요</span><span class="val">${fmtN(tl)}</span></div>
+    <div class="stat-line"><span class="lbl">댓글</span><span class="val">${fmtN(tc)}</span></div>
+    <div class="stat-line"><span class="lbl">쇼츠/일반</span><span class="val" style="font-size:14px">${shorts} / ${filtered.length-shorts}</span></div>`;
+  document.getElementById('resultCount').innerHTML =
+    `<strong>${filtered.length.toLocaleString()}</strong>${currentKeyword ? ' <em>"' + esc(currentKeyword) + '"</em>' : ''} <small>RESULTS${currentKeyword ? ' · MATCHED' : ''}${activePreset ? ' · PRESET' : ''}</small>`;
+}
+
+// weekly trend (views by yw)
+function renderTrendChart() {
+  const svg = document.getElementById('trendSvg');
+  const foot = document.getElementById('trendFoot');
+  const tip = document.getElementById('trendTip');
+  if (!svg) return;
+  const byWk = {};
+  filtered.forEach(d => { if (d.yw) byWk[d.yw] = (byWk[d.yw]||0) + d.v; });
+  const weeks = Object.keys(byWk).sort();
+  if (weeks.length < 2) {
+    svg.innerHTML = '';
+    foot.innerHTML = '<span style="color:var(--ink-4)">데이터 부족</span><span></span>';
+    tip.innerHTML = '';
+    return;
+  }
+  const series = weeks.map(w => byWk[w]);
+  const max = Math.max(...series);
+  const min = Math.min(...series);
+  const W = 200, H = 60, pad = 4;
+  const span = max - min || 1;
+  const pts = series.map((v, i) => {
+    const x = (i / (series.length - 1)) * (W - pad*2) + pad;
+    const y = H - pad - ((v - min) / span) * (H - pad*2);
+    return [x, y];
+  });
+  const line = pts.map(([x,y], i) => (i === 0 ? `M${x.toFixed(1)},${y.toFixed(1)}` : `L${x.toFixed(1)},${y.toFixed(1)}`)).join(' ');
+  const area = line + ` L${pts[pts.length-1][0].toFixed(1)},${H} L${pts[0][0].toFixed(1)},${H} Z`;
+  const [lx, ly] = pts[pts.length-1];
+  svg.innerHTML = `
+    <path class="area" d="${area}"/>
+    <path class="line" d="${line}"/>
+    <circle class="dot-last-ring" cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="4.5"/>
+    <circle class="dot-last" cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="2.5"/>`;
+  const wlast = weeks[weeks.length-1];
+  const vlast = series[series.length-1];
+  tip.innerHTML = `${fmtN(vlast)}<small>${esc(wlast)}</small>`;
+  foot.innerHTML = `<span>${esc(weeks[0])}</span><span>${esc(wlast)}</span>`;
+}
+
+function renderTopOrgChart() {
+  const freq = {};
+  filtered.forEach(d => { if(d.o) freq[d.o] = (freq[d.o]||0) + d.v; });
+  const top = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0,6);
+  const wrap = document.getElementById('topOrgChart');
+  if (!top.length) { wrap.innerHTML = '<div class="mono" style="font-size:10.5px;color:var(--ink-4);text-align:center;padding:8px 0">NO DATA</div>'; return; }
+  const max = top[0][1];
+  wrap.innerHTML = top.map(([name,val], i) => `
+    <div class="bar-item">
+      <div class="bar-top">
+        <span style="display:flex;align-items:baseline;flex:1;min-width:0">
+          <span class="bar-rank">${String(i+1).padStart(2,'0')}</span>
+          <span class="bar-name" title="${esc(name)}">${esc(name)}</span>
+        </span>
+        <span class="bar-val">${fmtN(val)}</span>
+      </div>
+      <div class="bar-line"><div class="bar-line-fill" style="width:${Math.round(val/max*100)}%"></div></div>
+    </div>`).join('');
+}
+
+// view
+function setView(v) {
+  currentView = v;
+  document.getElementById('btnList').classList.toggle('on', v==='list');
+  document.getElementById('btnCard').classList.toggle('on', v==='card');
+  document.getElementById('btnTable').classList.toggle('on', v==='table');
+  if (DB) renderResult();
+}
+
+function renderResult() {
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  currentPage = Math.min(currentPage, totalPages);
+  const start = (currentPage-1) * PAGE_SIZE;
+  const slice = filtered.slice(start, start + PAGE_SIZE);
+  const area = document.getElementById('resultArea');
+
+  if (!slice.length) {
+    area.innerHTML = `<div class="empty"><div class="empty-mark">no results.</div><h3>검색 결과가 없어요</h3><p>다른 키워드나 필터를 시도해보세요.</p></div>`;
+    document.getElementById('pagination').innerHTML = ''; return;
+  }
+  window._cardData = filtered;
+
+  if (currentView === 'table') area.innerHTML = renderTable(slice);
+  else if (currentView === 'card') area.innerHTML = renderCards(slice);
+  else area.innerHTML = renderList(slice);
+
+  renderPagination(totalPages);
+}
+
+function highlight(text) {
+  if (!currentKeyword || !text) return esc(text||'');
+  const kw = currentKeyword.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return esc(text).replace(new RegExp(kw, 'gi'), m => `<mark>${m}</mark>`);
+}
+
+// list (numbered editorial)
+function renderList(rows) {
+  const items = rows.map((d, i) => {
+    const idx = i + (currentPage-1)*PAGE_SIZE;
+    const rank = String(idx + 1).padStart(2,'0');
+    const thumb = getThumbnail(d.u);
+    return `
+    <div class="row" onclick="openModal(window._cardData[${idx}])">
+      <div class="row-rank">${rank}</div>
+      <div class="row-thumb">
+        ${thumb
+          ? `<img src="${thumb}" loading="lazy" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+          : ''}
+        <div class="row-thumb-ph" style="${thumb ? 'display:none' : ''}">▶</div>
+        <span class="thumb-flag ${d.t==='쇼츠'?'shorts':''}">${esc(d.t)}</span>
+      </div>
+      <div class="row-body">
+        <div class="row-meta">
+          <span class="tag-org ${d.ot==='지방'?'local':''}">${esc(d.o)}</span>
+          <span class="sep"></span>
+          <span>${esc(d.ot)}</span>
+          <span class="sep"></span>
+          <span>${esc(d.wl||d.yw||'')}</span>
+        </div>
+        <div class="row-title">${highlight(d.ti)}</div>
+        <div class="row-stats">
+          <div class="row-stat"><span class="lbl">VIEWS</span><span class="val">${fmtN(d.v)}</span></div>
+          <div class="row-stat"><span class="lbl">LIKES</span><span class="val">${fmtN(d.l)}</span></div>
+          <div class="row-stat"><span class="lbl">COMMENTS</span><span class="val">${fmtN(d.c)}</span></div>
+        </div>
+      </div>
+      <div class="row-action">
+        ${d.u
+          ? `<a class="row-link" href="${esc(d.u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">
+              YOUTUBE
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h5v5M8 2L2.5 7.5" stroke-linecap="round"/></svg>
+            </a>`
+          : `<span class="row-link" style="opacity:0.3;cursor:default;pointer-events:none">
+              NO URL
+            </span>`
+        }
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="list">${items}</div>`;
+}
+
+// card grid
+function renderCards(rows) {
+  const cards = rows.map((d, i) => {
+    const idx = i + (currentPage-1)*PAGE_SIZE;
+    const rank = String(idx + 1).padStart(2,'0');
+    const thumb = getThumbnail(d.u);
+    return `
+    <div class="card" onclick="openModal(window._cardData[${idx}])">
+      <div class="card-thumb">
+        ${thumb ? `<img src="${thumb}" loading="lazy" alt="">` : '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--ink-4)">▶</div>'}
+        <span class="thumb-flag ${d.t==='쇼츠'?'shorts':''}">${esc(d.t)}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-tag-row">
+          <span class="card-rank">${rank}</span>
+          <span class="card-tag-org ${d.ot==='지방'?'local':''}" title="${esc(d.o)}">${esc(d.o)}</span>
+        </div>
+        <div class="card-title">${highlight(d.ti)}</div>
+        <div class="card-meta-row">
+          <span>${esc(d.ot)}</span>
+          <span class="sep"></span>
+          <span>${esc(d.wl||d.yw||'')}</span>
+        </div>
+        <div class="card-stats">
+          <div class="cs"><span class="lbl">VIEWS</span><span class="val">${fmtN(d.v)}</span></div>
+          <div class="cs"><span class="lbl">LIKES</span><span class="val">${fmtN(d.l)}</span></div>
+          <div class="cs"><span class="lbl">COMM.</span><span class="val">${fmtN(d.c)}</span></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="grid">${cards}</div>`;
+}
+
+// table
+function renderTable(rows) {
+  const cols = [
+    {w:'40px', label:'#'},
+    {w:'72px', label:'THUMB'},
+    {w:'6%',   label:'TYPE'},
+    {w:'6%',   label:'KIND'},
+    {w:'12%',  label:'CHANNEL'},
+    {w:'auto', label:'TITLE'},
+    {w:'10%',  label:'VIEWS', sort:'views'},
+    {w:'8%',   label:'LIKES', sort:'likes'},
+    {w:'7%',   label:'COMM.', sort:'comments'},
+    {w:'9%',   label:'WEEK'},
+  ];
+  const ths = cols.map(c => `<th style="width:${c.w}" ${c.sort ? `data-sort="${c.sort}" onclick="setSortAndRender('${c.sort}')"` : ''} class="${c.sort===currentSort?'sorted':''}">${c.label}</th>`).join('');
+
+  // micro-sparkline by week for the views column (per row, normalized against current sort top)
+  const maxV = rows.length ? Math.max(...rows.map(r => r.v)) : 1;
+
+  const trs = rows.map((d, i) => {
+    const idx = i + (currentPage-1)*PAGE_SIZE;
+    const rank = String(idx + 1).padStart(2,'0');
+    const thumb = getThumbnail(d.u);
+    // tiny inline bar (ratio of this row's views vs max in current view)
+    const ratio = Math.min(1, d.v / maxV);
+    const sparkBar = `<span style="display:inline-block;width:48px;height:3px;background:var(--paper-3);vertical-align:middle;margin-right:8px;position:relative;overflow:hidden"><span style="position:absolute;left:0;top:0;height:100%;width:${Math.round(ratio*100)}%;background:var(--blue);opacity:.7"></span></span>`;
+    return `<tr onclick="openModal(window._cardData[${idx}])">
+      <td class="tbl-rank-cell">${rank}</td>
+      <td><div class="tbl-thumb">${thumb?`<img src="${thumb}" loading="lazy">`:'<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4)">▶</div>'}</div></td>
+      <td><span class="badge ${d.t==='쇼츠'?'shorts':'normal'}">${esc(d.t)}</span></td>
+      <td><span class="badge ${d.ot==='중앙'?'central':'local'}">${esc(d.ot)}</span></td>
+      <td style="font-size:12px;color:var(--ink-2);font-weight:500" title="${esc(d.o)}">${esc(d.o)}</td>
+      <td class="tbl-title-cell" title="${esc(d.ti)}">${highlight(d.ti)}</td>
+      <td class="num"><span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:0">${sparkBar}<span class="num-strong" style="color:var(--blue)">${fmtN(d.v)}</span></span></td>
+      <td class="num">${fmtN(d.l)}</td>
+      <td class="num">${fmtN(d.c)}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-3)">${esc(d.wl||d.yw||'')}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="tbl-wrap"><table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table></div>`;
+}
+function setSortAndRender(s) {
+  document.getElementById('sortSelect').value = s;
+  currentPage = 1; applyFilters();
+}
+
+// pagination
+function renderPagination(totalPages) {
+  if (totalPages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+  const p = currentPage; let btns = '';
+  btns += `<button class="pg" onclick="goPage(${p-1})" ${p===1?'disabled':''}>← PREV</button>`;
+  const range = [];
+  for (let i=1;i<=totalPages;i++) {
+    if (i===1 || i===totalPages || Math.abs(i-p)<=2) range.push(i);
+    else if (range[range.length-1]!=='…') range.push('…');
+  }
+  range.forEach(r => {
+    if (r==='…') btns += `<button class="pg" disabled>…</button>`;
+    else btns += `<button class="pg ${r===p?'on':''}" onclick="goPage(${r})">${String(r).padStart(2,'0')}</button>`;
+  });
+  btns += `<button class="pg" onclick="goPage(${p+1})" ${p===totalPages?'disabled':''}>NEXT →</button>`;
+  document.getElementById('pagination').innerHTML = `<div class="pager">${btns}</div>`;
+}
+function goPage(n) {
+  currentPage = n; renderResult();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// modal
+function getVideoId(url) {
+  if (!url) return null;
+  const m = url.match(/[?&]v=([^&]+)/) || url.match(/youtu\.be\/([^?]+)/);
+  return m ? m[1] : null;
+}
+function getThumbnail(url) {
+  const id = getVideoId(url);
+  return id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : null;
+}
+function openModal(d) {
+  const thumb = getThumbnail(d.u);
+  const mt = document.getElementById('modalThumb');
+  if (thumb) { mt.src = thumb; mt.style.display = ''; } else { mt.src = ''; mt.style.display = 'none'; }
+  const ytBtn = document.getElementById('modalYtBtn');
+  const footLink = document.getElementById('modalLink');
+  if (d.u) {
+    ytBtn.href = d.u; ytBtn.style.opacity = '';  ytBtn.style.pointerEvents = '';
+    footLink.href = d.u; footLink.style.opacity = ''; footLink.style.pointerEvents = '';
+    document.getElementById('modalLinkText').textContent = 'YouTube에서 보기';
+  } else {
+    ytBtn.href = '#'; ytBtn.style.opacity = '0.3'; ytBtn.style.pointerEvents = 'none';
+    footLink.href = '#'; footLink.style.opacity = '0.3'; footLink.style.pointerEvents = 'none';
+    document.getElementById('modalLinkText').textContent = 'URL 없음 (수집 전)';
+  }
+  document.getElementById('modalTitle').textContent = d.ti || '';
+  document.getElementById('modalOrg').textContent = (d.o||'') + (d.ot ? ' · ' + d.ot : '');
+  document.getElementById('modalBadges').innerHTML =
+    `<span class="badge ${d.t==='쇼츠'?'shorts':'normal'}">${esc(d.t)}</span>
+     <span class="badge ${d.ot==='중앙'?'central':'local'}">${esc(d.ot)}</span>`;
+  document.getElementById('mViews').textContent = fmtN(d.v);
+  document.getElementById('mLikes').textContent = fmtN(d.l);
+  document.getElementById('mComments').textContent = fmtN(d.c);
+  document.getElementById('modalWeek').textContent = d.wl || d.yw || '';
+  document.getElementById('videoModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(e) { if (e.target === document.getElementById('videoModal')) closeModalDirect(); }
+function closeModalDirect() {
+  document.getElementById('videoModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
+
+// export
+function exportExcel() {
+  if (!filtered.length) return;
+  const wb = XLSX.utils.book_new();
+  const rows = [['유형','기관구분','기관명','제목','조회수','좋아요','댓글','주차','URL']];
+  filtered.forEach(d => rows.push([d.t,d.ot,d.o,d.ti,d.v,d.l,d.c,d.wl||d.yw,d.u]));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), '검색결과');
+  XLSX.writeFile(wb, `잉크닷_${currentKeyword||'전체'}_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// ─── Converter ───
+let CONV_WB = null;      // 로드된 워크북
+let CONV_WEEKS = [];     // 시트별 주차 정보 [{sheetName, wl, rows, colMap}]
+let CONV_ACTIVE_IDX = 0; // 현재 선택된 주차 인덱스
+
+// 컬럼 정의: [표시명, jsonKey, 필수여부]
+const COL_DEFS = [
+  { label: '유형',     key: 't',  required: true  },
+  { label: '구분',     key: 'ot', required: false },
+  { label: '기관명',   key: 'o',  required: true  },
+  { label: '제목',     key: 'ti', required: true  },
+  { label: '조회수',   key: 'v',  required: true  },
+  { label: '좋아요',   key: 'l',  required: true  },
+  { label: '댓글',     key: 'c',  required: true  },
+  { label: 'URL',      key: 'u',  required: false },
+];
+
+// 헤더 문자열 → jsonKey 매핑 추론
+const HEADER_ALIASES = {
+  '유형': 't', '영상유형': 't', 'type': 't', '형태': 't',
+  '구분': 'ot', '기관구분': 'ot', 'orgtype': 'ot',
+  '기관명': 'o', '기관': 'o', 'org': 'o', 'organization': 'o',
+  '제목': 'ti', '영상제목': 'ti', '타이틀': 'ti', 'title': 'ti',
+  '조회수': 'v', '뷰': 'v', 'views': 'v', 'view': 'v',
+  '좋아요': 'l', 'likes': 'l', 'like': 'l',
+  '댓글': 'c', '댓글수': 'c', 'comments': 'c', 'comment': 'c',
+  'url': 'u', '링크': 'u', 'youtube': 'u', 'youtubeurl': 'u',
+};
+
+function openConvModal() {
+  document.getElementById('convModal').classList.add('open');
+}
+function closeConvModal() {
+  document.getElementById('convModal').classList.remove('open');
+}
+
+document.getElementById('convFile').addEventListener('change', e => {
+  const f = e.target.files[0]; if (f) loadConvExcel(f);
+});
+const convDrop = document.getElementById('convDrop');
+convDrop.addEventListener('dragover', e => { e.preventDefault(); convDrop.classList.add('over'); });
+convDrop.addEventListener('dragleave', () => convDrop.classList.remove('over'));
+convDrop.addEventListener('drop', e => {
+  e.preventDefault(); convDrop.classList.remove('over');
+  const f = e.dataTransfer.files[0]; if (f) loadConvExcel(f);
+});
+
+function loadConvExcel(file) {
+  document.getElementById('convStatus').textContent = '파일 읽는 중...';
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'binary' });
+      CONV_WB = wb;
+      CONV_WEEKS = parseWorkbook(wb);
+      document.getElementById('convStatus').textContent =
+        `✓ ${CONV_WEEKS.length}개 시트 로드 완료 · ${file.name}`;
+      document.getElementById('convWeeksWrap').style.display = '';
+      buildWeekTabs();
+      selectWeek(0);
+      document.getElementById('convExportBtn').disabled = false;
+    } catch (err) {
+      document.getElementById('convStatus').textContent = '⚠ 오류: ' + err.message;
+    }
+  };
+  r.readAsBinaryString(file);
+}
+
+function parseWorkbook(wb) {
+  return wb.SheetNames.map(name => {
+    const sheet = wb.Sheets[name];
+    const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+    if (!rawRows.length) return { sheetName: name, wl: name, rows: [], colMap: {} };
+
+    // 헤더 행 찾기 (첫 2행 중 매칭 많은 행)
+    let headerRow = 0;
+    let bestScore = 0;
+    for (let i = 0; i < Math.min(3, rawRows.length); i++) {
+      const score = rawRows[i].filter(h => HEADER_ALIASES[String(h).trim().toLowerCase()]).length;
+      if (score > bestScore) { bestScore = score; headerRow = i; }
+    }
+
+    const headers = rawRows[headerRow].map(h => String(h).trim());
+    const colMap = {}; // jsonKey → colIndex
+    headers.forEach((h, idx) => {
+      const key = HEADER_ALIASES[h.toLowerCase()];
+      if (key && !(key in colMap)) colMap[key] = idx;
+    });
+
+    const dataRows = rawRows.slice(headerRow + 1).filter(r => r.some(c => c !== ''));
+    // 주차명: 시트명을 우선, 없으면 첫 행의 특정 패턴
+    const wlMatch = name.match(/(\d{4}년\s*\d{1,2}월\s*\d+주차?)/);
+    const wl = wlMatch ? wlMatch[1].replace(/\s+/g, ' ') : name;
+
+    return { sheetName: name, wl, headers, colMap, dataRows, headerRow };
+  }).filter(w => w.dataRows && w.dataRows.length > 0);
+}
+
+function buildWeekTabs() {
+  const wrap = document.getElementById('convWeekTabs');
+  wrap.innerHTML = CONV_WEEKS.map((w, i) => {
+    const hasGoodData = Object.keys(w.colMap).length >= 3;
+    return `<button class="conv-week-tab${hasGoodData ? ' has-data' : ''}" onclick="selectWeek(${i})">${esc(w.wl || w.sheetName)}</button>`;
+  }).join('');
+}
+
+function selectWeek(idx) {
+  CONV_ACTIVE_IDX = idx;
+  document.querySelectorAll('.conv-week-tab').forEach((b, i) => {
+    b.classList.toggle('active', i === idx);
+  });
+  renderColTable(CONV_WEEKS[idx]);
+}
+
+function renderColTable(week) {
+  if (!week) return;
+  const { colMap, dataRows = [], headers = [] } = week;
+  const total = dataRows.length;
+
+  // 컬럼별 커버리지 & 샘플 계산
+  const tbody = document.getElementById('convColBody');
+  tbody.innerHTML = COL_DEFS.map(def => {
+    const colIdx = colMap[def.key];
+    const hasCol = colIdx !== undefined;
+    const samples = hasCol
+      ? dataRows.slice(0, 30).map(r => String(r[colIdx] || '')).filter(v => v.trim())
+      : [];
+    const coverage = hasCol && total > 0
+      ? Math.round(samples.length / Math.min(total, 30) * 100)
+      : 0;
+
+    let status, checkClass;
+    if (!hasCol) {
+      status = 'MISS'; checkClass = def.required ? 'warn' : 'miss';
+    } else if (coverage >= 70) {
+      status = 'OK'; checkClass = 'ok';
+    } else {
+      status = coverage > 0 ? `${coverage}%` : 'EMPTY';
+      checkClass = def.required ? 'warn' : 'miss';
+    }
+
+    const sampleVal = samples.length > 0
+      ? samples.find(s => s.length > 0) || ''
+      : '';
+    const headerName = hasCol ? (headers[colIdx] || `col${colIdx}`) : '—';
+    const inactive = !hasCol && !def.required;
+
+    return `<tr class="${inactive ? 'inactive' : ''}">
+      <td><span class="col-name">${def.label}</span></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-3)">${def.key}</td>
+      <td><span class="col-check ${checkClass}">${status === 'OK' ? '✓' : status === 'MISS' ? '?' : '!'}</span> <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-3)">${status}</span></td>
+      <td class="col-coverage">${hasCol ? Math.round(dataRows.filter(r => String(r[colIdx]||'').trim()).length / (total||1) * 100) + '%' : '—'}</td>
+      <td class="col-sample" title="${esc(sampleVal)}">${esc(headerName)} ${sampleVal ? '· ' + esc(sampleVal.slice(0,40)) : ''}</td>
+    </tr>`;
+  }).join('');
+
+  // summary
+  const mapped = COL_DEFS.filter(d => d.key in colMap).length;
+  const required = COL_DEFS.filter(d => d.required);
+  const requiredOk = required.filter(d => d.key in colMap).length;
+  document.getElementById('convSummary').innerHTML = `
+    <div class="conv-summary-item"><strong>${total.toLocaleString()}</strong>행 (데이터)</div>
+    <div class="conv-summary-item"><strong>${mapped} / ${COL_DEFS.length}</strong>컬럼 매핑됨</div>
+    <div class="conv-summary-item"><strong>${requiredOk} / ${required.length}</strong>필수 컬럼 확인</div>
+    <div class="conv-summary-item"><strong>${week.wl || week.sheetName}</strong>주차</div>
+  `;
+}
+
+function convExportJSON() {
+  if (!CONV_WEEKS.length) return;
+  // 전체 시트를 하나의 data 배열로 변환
+  const allData = [];
+  CONV_WEEKS.forEach(week => {
+    const { colMap, dataRows = [], wl } = week;
+    // yw 추론
+    const ywMatch = (wl||'').match(/(\d{4})년\s*(\d{1,2})월/);
+    const yw = ywMatch ? `${ywMatch[1]}-${ywMatch[2].padStart(2,'0')}` : '';
+    const wkMatch = (wl||'').match(/(\d+)주차?/);
+    const wk = wkMatch ? parseInt(wkMatch[1]) : 0;
+
+    dataRows.forEach(row => {
+      const get = key => {
+        const idx = colMap[key];
+        return idx !== undefined ? String(row[idx] || '').trim() : '';
+      };
+      const v = parseInt(get('v')) || 0;
+      const l = parseInt(get('l')) || 0;
+      const c = parseInt(get('c')) || 0;
+      allData.push({
+        t: get('t'), ot: get('ot'), o: get('o'), ti: get('ti'),
+        v, l, c, u: get('u'), yw, wk, wl: wl || ''
+      });
+    });
+  });
+
+  const orgs = [...new Set(allData.map(d => d.o).filter(Boolean))].sort();
+  const weeks = [...new Set(allData.map(d => d.wl).filter(Boolean))];
+  const years = [...new Set(allData.map(d => d.yw ? d.yw.slice(0,4) : '').filter(Boolean))].sort();
+  const result = {
+    meta: { total: allData.length, files: CONV_WEEKS.length, orgs, weeks, years, generated: new Date().toISOString() },
+    data: allData
+  };
+
+  const blob = new Blob([JSON.stringify(result)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `data_${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// utils
+function fmtN(n) {
+  if (!n) return '0';
+  n = Number(n);
+  if (n >= 1e8) return (n/1e8).toFixed(1)+'억';
+  if (n >= 1e4) return (n/1e4).toFixed(1)+'만';
+  return n.toLocaleString();
+}
+function esc(s) {
+  return (s||'').toString()
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* mock */
+(function mockIfEmpty() {
+  setTimeout(() => {
+    if (DB) return;
+    const orgs = ['행정안전부','문화체육관광부','보건복지부','서울특별시','경기도','부산광역시','국립국어원','한국관광공사','농촌진흥청','인천광역시','대전광역시','대구광역시','국세청','통계청','경찰청','소방청','산림청','기상청','국토교통부','교육부'];
+    const sample = ['축제 현장 스케치','홍보 영상 공식','정책 브리핑','시민과의 대화','명소 소개','일상 캠페인','연말 결산','기념행사 하이라이트','우리 동네 이야기','전시 안내','신년사','특별 인터뷰','현장 르포','메시지','정책 설명회','체험기','문화재 답사','지역 축제','국정 운영 보고','국민 참여 토론'];
+    const ytIds = ['dQw4w9WgXcQ','9bZkp7q19f0','jNQXAC9IVRw','OPf0YbXqDm0','kJQP7kiw5Fk','RgKAFK5djSk','3JZ_D3ELwOQ','y6120QOlsfU','hT_nvWreIhg','CevxZvSJLk8'];
+    const data = [];
+    const TOTAL_WEEKS = 20;
+    // distribute across 20 weeks, 8-12 videos per week
+    for (let w = 1; w <= TOTAL_WEEKS; w++) {
+      const perWeek = 6 + Math.floor(Math.random() * 5);
+      const seasonal = 0.6 + 0.5 * Math.sin((w / TOTAL_WEEKS) * Math.PI * 1.5);
+      for (let k = 0; k < perWeek; k++) {
+        const i = (w * 7 + k) % orgs.length;
+        const o = orgs[i];
+        const t = (i + k) % 4 === 0 ? '쇼츠' : '일반';
+        const ot = i < 10 ? '중앙' : '지방';
+        const ti = `${o} ${sample[(i + k) % sample.length]} #${w}-${k+1}`;
+        const baseV = (200000 + Math.random() * 3000000) * seasonal;
+        const v = Math.floor(baseV);
+        const l = Math.floor(v * (Math.random() * 0.04 + 0.01));
+        const c = Math.floor(l * (Math.random() * 0.18 + 0.04));
+        const yw = `2026-W${String(w).padStart(2,'0')}`;
+        data.push({ ti, o, ot, t, v, l, c, yw, wl: yw, u: `https://www.youtube.com/watch?v=${ytIds[(i + k) % ytIds.length]}`, wk: w });
+      }
+    }
+    initApp({
+      meta: {
+        total: data.length,
+        weeks: [...new Set(data.map(d => d.yw))],
+        orgs: [...new Set(data.map(d=>d.o))].sort(),
+        years: ['2026']
+      },
+      data
+    });
+  }, 600);
+})();
+</script>
+</body>
+</html>
