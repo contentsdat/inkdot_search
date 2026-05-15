@@ -421,13 +421,8 @@ button { font-family: inherit; cursor: pointer; }
 /* ──────────────────────────────────────── LAYOUT */
 .main {
   max-width: 1320px; margin: 0 auto;
-  padding: 16px 32px 96px;
-  display: grid;
-  grid-template-columns: 240px 1fr;
-  gap: 40px;
-  align-items: start;
+  padding: 32px 32px 96px;
 }
-@media (max-width: 1024px) { .main { grid-template-columns: 1fr; gap: 24px; } }
 
 /* ──────────────────────────────────────── SIDEBAR */
 .side {
@@ -650,6 +645,7 @@ button { font-family: inherit; cursor: pointer; }
   border-bottom: 1px solid var(--ink-1);
   gap: 12px; flex-wrap: wrap;
 }
+.toolbar > div:first-child { display: flex; flex-direction: column; gap: 4px; }
 .tool-count {
   font-family: 'Instrument Serif', serif;
   font-style: italic;
@@ -1417,6 +1413,182 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
 .drag-overlay-icon { font-size: 36px; margin-bottom: 8px; }
 .drag-overlay-text { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
 .drag-overlay-sub { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-3); margin-top: 4px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+/* ──────────────────────────────────────── INLINE FILTERS (under search) */
+.inline-filters {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: white;
+  border: 1.5px solid var(--ink-1);
+}
+.inline-filter {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  min-height: 50px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.inline-filter:nth-child(2n) { border-right: none; }
+.inline-filter:nth-last-child(-n+2) { border-bottom: none; }
+.inline-filter-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  min-width: 64px;
+}
+.inline-filter-body { flex: 1; display: flex; align-items: center; gap: 6px; min-width: 0; }
+.inline-filter-body .btn-stack { gap: 4px; }
+.inline-filter-body select {
+  width: 100%; appearance: none;
+  background: transparent url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%235a5a5c' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>") no-repeat right 4px center;
+  border: none;
+  border-bottom: 1px solid var(--line-2);
+  padding: 4px 22px 4px 0;
+  font: inherit; font-size: 13px;
+  color: var(--ink-1);
+  outline: none;
+  transition: var(--t);
+}
+.inline-filter-body select:hover { border-bottom-color: var(--ink-1); }
+.inline-filter-body select:focus { border-bottom-color: var(--blue); }
+@media (max-width: 720px) {
+  .inline-filters { grid-template-columns: 1fr; }
+  .inline-filter { border-right: none; }
+  .inline-filter:nth-last-child(-n+2) { border-bottom: 1px solid var(--line); }
+  .inline-filter:last-child { border-bottom: none; }
+}
+
+/* ──────────────────────────────────────── QUICK PICKS (single row) */
+.quick-row {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.quick-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-right: 4px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.quick-label::after {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 1px;
+  background: var(--line-2);
+}
+.quick-chip {
+  background: transparent;
+  border: 1.5px solid var(--ink-1);
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink-1);
+  cursor: pointer;
+  transition: var(--t);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.quick-chip:hover { background: var(--ink-1); color: white; }
+.quick-chip.on { background: var(--blue); color: white; border-color: var(--blue); }
+.quick-note {
+  margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--ink-4);
+  letter-spacing: 0.02em;
+}
+
+/* ──────────────────────────────────────── SUMMARY BAND (above list) */
+.summary-band {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-bottom: 24px;
+  border-top: 1.5px solid var(--ink-1);
+  border-bottom: 1.5px solid var(--ink-1);
+}
+.summary-col {
+  padding: 18px 22px;
+}
+.summary-col + .summary-col {
+  border-left: 1px solid var(--line);
+}
+.summary-col-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.summary-col-head h5 {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.summary-col-head .tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-4);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.summary-stats .item {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.summary-stats .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--ink-4);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.summary-stats .val {
+  font-size: 20px; font-weight: 700;
+  letter-spacing: -0.02em;
+  font-feature-settings: 'tnum';
+  color: var(--ink-1);
+}
+.summary-stats .item:first-child .val { color: var(--blue); }
+.summary-top {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.summary-top .bar-item { gap: 2px; }
+.summary-top .bar-top { margin-bottom: 3px; }
+.summary-top .bar-name { font-size: 12.5px; }
+.summary-col-head .chart-tabs { margin-bottom: 0; }
+@media (max-width: 900px) {
+  .summary-band { grid-template-columns: 1fr; }
+  .summary-col + .summary-col { border-left: none; border-top: 1px solid var(--line); }
+  .summary-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* list title (above toolbar) note */
+.list-note {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--ink-4);
+  margin-top: 6px;
+  letter-spacing: 0.02em;
+}
 </style>
 </head>
 <body>
@@ -1543,8 +1715,6 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
     </div>
   </div>
 
-  <p class="hero-sub">중앙기관과 지방기관이 매주 올리는 영상의 조회수·좋아요·댓글을 매주 수집해 보관합니다. 키워드로, 기관으로, 기간으로 — 원하는 방식으로 탐색하세요.</p>
-
   <div class="search-big">
     <span class="label">SEARCH</span>
     <input type="text" id="searchInput" placeholder="키워드를 입력하세요" autocomplete="off">
@@ -1554,102 +1724,79 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
     </button>
   </div>
 
-  <div class="hero-foot">
-    <span id="dbStatusBadge"></span>
-    <button onclick="openDbModal()">다른 DB 불러오기</button>
-  </div>
-</section>
-
-<!-- HOME RESET BAR -->
-<div class="home-reset-bar" id="homeResetBar">
-  <div class="home-reset-inner">
-    <span class="home-reset-label">
-      <span>현재 선택:</span>
-      <strong id="homeResetLabel">—</strong>
-    </span>
-    <button class="home-reset-btn" onclick="goHome()">
-      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 6L6 1l5 5M2 5.5V11h3V7.5h2V11h3V5.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      처음으로 돌아가기
-    </button>
-  </div>
-</div>
-
-<!-- PRESETS -->
-<div class="preset-band">
-  <div class="preset-head">
-    Quick picks<small>PRESET SEARCHES</small>
-  </div>
-  <div class="preset-list" id="presetList"></div>
-</div>
-
-<!-- KEYWORDS -->
-<div class="kw-band">
-  <div class="kw-head">
-    Trending<small>POPULAR KEYWORDS</small>
-  </div>
-  <div class="kw-chips" id="keywordChips"></div>
-</div>
-
-<!-- MAIN -->
-<div class="main">
-  <aside class="side">
-    <!-- 필터 -->
-    <div class="side-block">
-      <div class="side-head">
-        <h4>FILTER</h4>
-        <button onclick="resetFilters()">RESET</button>
-      </div>
-
-      <div class="field">
-        <div class="field-label">기관 구분</div>
+  <!-- INLINE FILTERS -->
+  <div class="inline-filters">
+    <div class="inline-filter">
+      <span class="inline-filter-label">기관 구분</span>
+      <div class="inline-filter-body">
         <div class="btn-stack" id="orgTypeSeg">
           <button class="on" data-val="">전체</button>
           <button data-val="중앙">중앙</button>
           <button data-val="지방">지방</button>
         </div>
       </div>
-
-      <div class="field">
-        <div class="field-label">영상 유형</div>
+    </div>
+    <div class="inline-filter">
+      <span class="inline-filter-label">영상 유형</span>
+      <div class="inline-filter-body">
         <div class="btn-stack" id="vidTypeSeg">
           <button class="on" data-val="">전체</button>
           <button data-val="쇼츠">쇼츠</button>
           <button data-val="일반">일반</button>
         </div>
       </div>
-
-      <div class="field">
-        <div class="field-label">기관명</div>
+    </div>
+    <div class="inline-filter">
+      <span class="inline-filter-label">기관명</span>
+      <div class="inline-filter-body">
         <select id="orgFilter" onchange="applyFilters()"><option value="">전체 기관</option></select>
       </div>
-
-      <div class="field">
-        <div class="field-label">수집 기간</div>
+    </div>
+    <div class="inline-filter">
+      <span class="inline-filter-label">수집 기간</span>
+      <div class="inline-filter-body">
         <select id="yearFilter" onchange="applyFilters()"><option value="">전체 기간</option></select>
       </div>
     </div>
+  </div>
 
-    <!-- 통계 -->
-    <div class="side-block">
-      <div class="side-head"><h4>STATS</h4><span class="mono" style="font-size:10px;color:var(--ink-4)">SUMMARY</span></div>
-      <div class="stat-list" id="statMini"></div>
-    </div>
+  <!-- QUICK PICKS -->
+  <div class="quick-row" id="presetList">
+    <span class="quick-label">Quick picks</span>
+  </div>
+  <div class="quick-note">* 쇼츠 베스트 · 댓글 많은 영상 · 중앙기관 TOP · 지방기관 TOP은 최근 3개월 데이터를 기준으로 합니다.</div>
+</section>
 
-    <!-- 차트 -->
-    <div class="side-block">
-      <div class="side-head"><h4>TOP CHANNELS</h4><span class="mono" style="font-size:10px;color:var(--ink-4)">BY METRIC</span></div>
-      <div class="chart-tabs">
-        <button class="chart-tab on" data-metric="v" onclick="setChartMetric('v')">조회수</button>
-        <button class="chart-tab" data-metric="l" onclick="setChartMetric('l')">좋아요</button>
-        <button class="chart-tab" data-metric="c" onclick="setChartMetric('c')">댓글</button>
-      </div>
-      <div class="bars" id="topOrgChart"></div>
-    </div>
-  </aside>
-
+<!-- MAIN -->
+<div class="main">
   <main>
+    <!-- SUMMARY BAND: stats + top channels -->
+    <div class="summary-band">
+      <div class="summary-col">
+        <div class="summary-col-head">
+          <h5>현재 결과 요약</h5>
+          <span class="tag">STATS</span>
+        </div>
+        <div class="summary-stats" id="statMini"></div>
+      </div>
+      <div class="summary-col">
+        <div class="summary-col-head">
+          <h5>탑 채널 <span style="color:var(--ink-4);font-weight:500;font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:0.04em">TOP&nbsp;3</span></h5>
+          <div class="chart-tabs">
+            <button class="chart-tab on" data-metric="v" onclick="setChartMetric('v')">조회수</button>
+            <button class="chart-tab" data-metric="l" onclick="setChartMetric('l')">좋아요</button>
+            <button class="chart-tab" data-metric="c" onclick="setChartMetric('c')">댓글</button>
+          </div>
+        </div>
+        <div class="bars summary-top" id="topOrgChart"></div>
+      </div>
+    </div>
+
     <div class="toolbar">
-      <div class="tool-count" id="resultCount"></div>
+      <div>
+        <div class="tool-count" id="resultCount"></div>
+        <div class="list-note">* 각 영상의 상세 수치는 수집일 기준입니다.</div>
+      </div>
       <div class="tool-right">
         <select class="tool-select" id="sortSelect" onchange="applyFilters()">
           <option value="views">조회수 높은순</option>
@@ -1833,8 +1980,6 @@ function initApp(json) {
   document.getElementById('headerMeta').textContent = `${totalStr} ITEMS · ${weeksCnt} WEEKS`;
   document.getElementById('heroBigCount').textContent = fmtN(totalCnt);
   document.getElementById('heroWeeks').textContent = `${weeksCnt} WEEKS`;
-  const badge = document.getElementById('dbStatusBadge');
-  if (badge) badge.textContent = `DB / ${totalStr} ITEMS · ${weeksCnt} WEEKS`;
 
   const orgSel = document.getElementById('orgFilter');
   orgSel.innerHTML = '<option value="">전체 기관</option>';
@@ -1853,7 +1998,6 @@ function initApp(json) {
   activeOrgType = ''; activeVidType = '';
 
   setView('list');
-  buildKeywordChips();
   buildPresets();
   applyFilters();
 }
@@ -1894,12 +2038,12 @@ function buildKeywordChips() {
 
 // presets
 const PRESETS = [
-  { id: 'topweek', name: '이번 주 인기',  sub: 'TOP THIS WEEK',  apply: () => ({ year: latestYear(), latestWeekOnly: true, sort: 'views' }) },
-  { id: 'topmonth', name: '이달 TOP 영상', sub: 'TOP THIS MONTH', apply: () => ({ year: latestYear(), recentWeeks: 4, sort: 'views' }) },
-  { id: 'shorts', name: '쇼츠 베스트',     sub: 'BEST SHORTS',    apply: () => ({ vidType: '쇼츠', sort: 'views' }) },
-  { id: 'comm', name: '댓글 많은 영상',    sub: 'MOST DISCUSSED', apply: () => ({ sort: 'comments' }) },
-  { id: 'central', name: '중앙기관 TOP',  sub: 'CENTRAL ORGS',   apply: () => ({ orgType: '중앙', sort: 'views' }) },
-  { id: 'local', name: '지방기관 TOP',    sub: 'LOCAL ORGS',     apply: () => ({ orgType: '지방', sort: 'views' }) },
+  { id: 'topweek',  name: '이번 주 인기',   sub: 'TOP THIS WEEK',  apply: () => ({ year: latestYear(), latestWeekOnly: true, sort: 'views' }) },
+  { id: 'topmonth', name: '이달 TOP 영상',  sub: 'TOP THIS MONTH', apply: () => ({ year: latestYear(), recentWeeks: 4, sort: 'views' }) },
+  { id: 'shorts',   name: '쇼츠 베스트',    sub: 'BEST SHORTS',    apply: () => ({ vidType: '쇼츠', recentWeeks: 13, sort: 'views' }) },
+  { id: 'comm',     name: '댓글 많은 영상', sub: 'MOST DISCUSSED', apply: () => ({ recentWeeks: 13, sort: 'comments' }) },
+  { id: 'central',  name: '중앙기관 TOP',  sub: 'CENTRAL ORGS',   apply: () => ({ orgType: '중앙', recentWeeks: 13, sort: 'views' }) },
+  { id: 'local',    name: '지방기관 TOP',  sub: 'LOCAL ORGS',     apply: () => ({ orgType: '지방', recentWeeks: 13, sort: 'views' }) },
 ];
 let activePreset = null;
 let presetExtras = {}; // latestWeekOnly / recentWeeks runtime carrier
@@ -1916,13 +2060,9 @@ function latestWeek() {
 
 function buildPresets() {
   const el = document.getElementById('presetList');
-  el.innerHTML = PRESETS.map((p, i) => `
-    <button class="preset" data-id="${p.id}" onclick="applyPreset('${p.id}')">
-      <span class="preset-arrow">↗</span>
-      <span class="preset-num">P / ${String(i+1).padStart(2,'0')}</span>
-      <span class="preset-name">${p.name}</span>
-      <span class="preset-sub">${p.sub}</span>
-    </button>`).join('');
+  const chips = PRESETS.map(p => `
+    <button class="quick-chip" data-id="${p.id}" onclick="applyPreset('${p.id}')">${p.name}</button>`).join('');
+  el.innerHTML = `<span class="quick-label">Quick picks</span>` + chips;
 }
 
 function applyPreset(id) {
@@ -1931,12 +2071,12 @@ function applyPreset(id) {
   // toggle off if same preset clicked
   if (activePreset === id) {
     activePreset = null; presetExtras = {};
-    document.querySelectorAll('.preset').forEach(b => b.classList.remove('on'));
+    document.querySelectorAll('.quick-chip').forEach(b => b.classList.remove('on'));
     resetFilters();
     return;
   }
   activePreset = id;
-  document.querySelectorAll('.preset').forEach(b => b.classList.toggle('on', b.dataset.id === id));
+  document.querySelectorAll('.quick-chip').forEach(b => b.classList.toggle('on', b.dataset.id === id));
 
   // reset other filters first (but preserve preset)
   activeOrgType = ''; activeVidType = '';
@@ -1945,7 +2085,6 @@ function applyPreset(id) {
   document.getElementById('orgFilter').value = '';
   document.getElementById('yearFilter').value = '';
   document.getElementById('searchInput').value = '';
-  document.querySelectorAll('.kw-chip').forEach(c => c.classList.remove('on'));
   currentKeyword = ''; presetExtras = {};
 
   const opts = p.apply();
@@ -1973,7 +2112,6 @@ function setKeyword(w) {
 function doSearch() {
   currentKeyword = document.getElementById('searchInput').value.trim();
   currentPage = 1;
-  document.querySelectorAll('.kw-chip').forEach(c => c.classList.toggle('on', c.dataset.kw === currentKeyword));
   applyFilters();
 }
 document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
@@ -2012,51 +2150,17 @@ function applyFilters() {
 
   filtered = res;
   updateStats(); renderResult(); renderTopOrgChart();
-  updateHomeResetBar();
 }
-
-function goHome() {
-  resetFilters();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function updateHomeResetBar() {
-  const bar = document.getElementById('homeResetBar');
-  const lbl = document.getElementById('homeResetLabel');
-  if (!bar || !lbl) return;
-
-  const parts = [];
-  if (activePreset) {
-    const p = PRESETS.find(x => x.id === activePreset);
-    if (p) parts.push('퀵 픽: ' + p.name);
-  }
-  if (currentKeyword) parts.push('키워드: "' + currentKeyword + '"');
-  if (activeOrgType) parts.push('기관: ' + activeOrgType);
-  if (activeVidType) parts.push('유형: ' + activeVidType);
-  const org = document.getElementById('orgFilter');
-  if (org && org.value) parts.push('기관명: ' + org.value);
-  const year = document.getElementById('yearFilter');
-  if (year && year.value) parts.push('기간: ' + year.value + '년');
-
-  if (parts.length > 0) {
-    lbl.textContent = parts.join(' · ');
-    bar.classList.add('visible');
-  } else {
-    bar.classList.remove('visible');
-  }
-}
-
 
 function resetFilters() {
   activeOrgType = ''; activeVidType = '';
   activePreset = null; presetExtras = {};
-  document.querySelectorAll('.preset').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.quick-chip').forEach(b => b.classList.remove('on'));
   document.querySelectorAll('#orgTypeSeg button').forEach((x,i) => x.classList.toggle('on', i === 0));
   document.querySelectorAll('#vidTypeSeg button').forEach((x,i) => x.classList.toggle('on', i === 0));
   document.getElementById('orgFilter').value = '';
   document.getElementById('yearFilter').value = '';
   document.getElementById('searchInput').value = '';
-  document.querySelectorAll('.kw-chip').forEach(c => c.classList.remove('on'));
   currentKeyword = ''; currentPage = 1;
   applyFilters();
 }
@@ -2066,16 +2170,11 @@ function updateStats() {
   const tv = filtered.reduce((s,d) => s+d.v, 0);
   const tl = filtered.reduce((s,d) => s+d.l, 0);
   const tc = filtered.reduce((s,d) => s+d.c, 0);
-  const shorts = filtered.filter(d => d.t==='쇼츠').length;
   document.getElementById('statMini').innerHTML = `
-    <div class="stat-hero">
-      <span class="lbl">RESULTS · 검색 결과</span>
-      <span class="val">${filtered.length.toLocaleString()}<span class="unit">건</span></span>
-    </div>
-    <div class="stat-line"><span class="lbl">조회수</span><span class="val">${fmtN(tv)}</span></div>
-    <div class="stat-line"><span class="lbl">좋아요</span><span class="val">${fmtN(tl)}</span></div>
-    <div class="stat-line"><span class="lbl">댓글</span><span class="val">${fmtN(tc)}</span></div>
-    <div class="stat-line"><span class="lbl">쇼츠/일반</span><span class="val" style="font-size:14px">${shorts} / ${filtered.length-shorts}</span></div>`;
+    <div class="item"><span class="lbl">결과</span><span class="val">${filtered.length.toLocaleString()}</span></div>
+    <div class="item"><span class="lbl">조회수</span><span class="val">${fmtN(tv)}</span></div>
+    <div class="item"><span class="lbl">좋아요</span><span class="val">${fmtN(tl)}</span></div>
+    <div class="item"><span class="lbl">댓글</span><span class="val">${fmtN(tc)}</span></div>`;
   document.getElementById('resultCount').innerHTML =
     `<strong>${filtered.length.toLocaleString()}</strong>${currentKeyword ? ' <em>"' + esc(currentKeyword) + '"</em>' : ''} <small>RESULTS${currentKeyword ? ' · MATCHED' : ''}${activePreset ? ' · PRESET' : ''}</small>`;
 }
@@ -2128,7 +2227,7 @@ function setChartMetric(m) {
 function renderTopOrgChart() {
   const freq = {};
   filtered.forEach(d => { if(d.o) freq[d.o] = (freq[d.o]||0) + (d[chartMetric]||0); });
-  const top = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0,6);
+  const top = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0,3);
   const wrap = document.getElementById('topOrgChart');
   if (!top.length) { wrap.innerHTML = '<div class="mono" style="font-size:10.5px;color:var(--ink-4);text-align:center;padding:8px 0">NO DATA</div>'; return; }
   const max = top[0][1];
@@ -2308,27 +2407,32 @@ function setSortAndRender(s) {
   currentPage = 1; applyFilters();
 }
 
-// pagination
+// pagination — show up to 10 numbered buttons (windowed)
 function renderPagination(totalPages) {
   if (totalPages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
-  const p = currentPage; let btns = '';
+  const p = currentPage;
+  const WINDOW = 10;
+  let start = Math.max(1, p - Math.floor(WINDOW / 2));
+  let end = start + WINDOW - 1;
+  if (end > totalPages) { end = totalPages; start = Math.max(1, end - WINDOW + 1); }
+
+  let btns = '';
+  btns += `<button class="pg" onclick="goPage(1)" ${p===1?'disabled':''} title="처음">«</button>`;
   btns += `<button class="pg" onclick="goPage(${p-1})" ${p===1?'disabled':''}>← PREV</button>`;
-  const range = [];
-  for (let i=1;i<=totalPages;i++) {
-    if (i===1 || i===totalPages || Math.abs(i-p)<=4) range.push(i);
-    else if (range[range.length-1]!=='…') range.push('…');
+  for (let i = start; i <= end; i++) {
+    btns += `<button class="pg ${i===p?'on':''}" onclick="goPage(${i})">${String(i).padStart(2,'0')}</button>`;
   }
-  range.forEach(r => {
-    if (r==='…') btns += `<button class="pg" disabled>…</button>`;
-    else btns += `<button class="pg ${r===p?'on':''}" onclick="goPage(${r})">${String(r).padStart(2,'0')}</button>`;
-  });
   btns += `<button class="pg" onclick="goPage(${p+1})" ${p===totalPages?'disabled':''}>NEXT →</button>`;
+  btns += `<button class="pg" onclick="goPage(${totalPages})" ${p===totalPages?'disabled':''} title="끝">»</button>`;
   document.getElementById('pagination').innerHTML = `<div class="pager">${btns}</div>`;
 }
 function goPage(n) {
   currentPage = n; renderResult();
   const area = document.getElementById('resultArea');
-  if (area) area.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (area) {
+    const top = area.getBoundingClientRect().top + window.pageYOffset - 80;
+    window.scrollTo({ top, behavior: 'smooth' });
+  }
 }
 
 // modal
