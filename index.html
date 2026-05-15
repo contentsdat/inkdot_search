@@ -1567,7 +1567,7 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
   font-feature-settings: 'tnum';
   color: var(--ink-1);
 }
-.summary-stats .item:first-child .val { color: var(--blue); }
+
 .summary-top {
   display: flex; flex-direction: column; gap: 8px;
 }
@@ -2067,6 +2067,49 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
   font-size: clamp(15px, 4vw, 20px);
 }
 
+/* 영상수 두 번째 줄 */
+.summary-stats .item-full {
+  grid-column: 1 / -1;
+  border-top: 1px dashed var(--line-2);
+  padding-top: 10px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.summary-stats .item-full .lbl {
+  flex-shrink: 0;
+}
+.val-group {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.vg-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.vg-label {
+  font-size: 10px;
+  color: var(--ink-4);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+.vg-val {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink-1);
+  font-feature-settings: 'tnum';
+}
+.vg-sep {
+  color: var(--ink-5);
+  font-size: 11px;
+}
+
 /* ⑪ 터치 타겟 — 최소 44px 높이 보장 */
 @media (max-width: 768px) {
   .kw-chip {
@@ -2293,7 +2336,7 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
   <div class="quick-row" id="presetList">
     <span class="quick-label">Quick picks</span>
   </div>
-  <div class="quick-note">* 쇼츠 베스트 · 댓글 많은 영상 · 중앙기관 TOP · 지방기관 TOP은 최근 3개월 데이터를 기준으로 합니다.</div>
+
 
   </div><!-- /searchPanel -->
 
@@ -2810,11 +2853,27 @@ function updateStats() {
   const tv = filtered.reduce((s,d) => s+d.v, 0);
   const tl = filtered.reduce((s,d) => s+d.l, 0);
   const tc = filtered.reduce((s,d) => s+d.c, 0);
+  const total = filtered.length;
+  const central = filtered.filter(d => d.ot === '중앙').length;
+  const local = filtered.filter(d => d.ot === '지방').length;
+  const general = filtered.filter(d => d.t === '일반').length;
+  const shorts = filtered.filter(d => d.t === '쇼츠').length;
   document.getElementById('statMini').innerHTML = `
-    <div class="item"><span class="lbl">결과</span><span class="val">${filtered.length.toLocaleString()}</span></div>
+    <div class="item"><span class="lbl">결과</span><span class="val" style="color:var(--blue)">${filtered.length.toLocaleString()}</span></div>
     <div class="item"><span class="lbl">조회수</span><span class="val">${fmtN(tv)}</span></div>
     <div class="item"><span class="lbl">좋아요</span><span class="val">${fmtN(tl)}</span></div>
-    <div class="item"><span class="lbl">댓글</span><span class="val">${fmtN(tc)}</span></div>`;
+    <div class="item"><span class="lbl">댓글</span><span class="val">${fmtN(tc)}</span></div>
+    <div class="item item-full"><span class="lbl">영상수</span><span class="val-group">
+      <span class="vg-item"><span class="vg-label">전체</span><span class="vg-val">${total.toLocaleString()}</span></span>
+      <span class="vg-sep">·</span>
+      <span class="vg-item"><span class="vg-label">중앙</span><span class="vg-val">${central.toLocaleString()}</span></span>
+      <span class="vg-sep">·</span>
+      <span class="vg-item"><span class="vg-label">지방</span><span class="vg-val">${local.toLocaleString()}</span></span>
+      <span class="vg-sep">·</span>
+      <span class="vg-item"><span class="vg-label">일반</span><span class="vg-val">${general.toLocaleString()}</span></span>
+      <span class="vg-sep">·</span>
+      <span class="vg-item"><span class="vg-label">쇼츠</span><span class="vg-val">${shorts.toLocaleString()}</span></span>
+    </span></div>`;
   document.getElementById('resultCount').innerHTML =
     `<strong>${filtered.length.toLocaleString()}</strong>${currentKeyword ? ' <em>"' + esc(currentKeyword) + '"</em>' : ''} <small>RESULTS${currentKeyword ? ' · MATCHED' : ''}${activePreset ? ' · PRESET' : ''}</small>`;
 }
