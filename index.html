@@ -1589,6 +1589,314 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
   margin-top: 6px;
   letter-spacing: 0.02em;
 }
+
+/* ──────────────────────────────────────── MODE TABS (SEARCH / COMPARE) */
+.mode-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 28px;
+  border: 1.5px solid var(--ink-1);
+  width: fit-content;
+  box-shadow: 4px 4px 0 var(--ink-1);
+}
+.mode-tab {
+  background: transparent; border: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--ink-3);
+  padding: 10px 26px;
+  display: flex; align-items: center; gap: 8px;
+  border-right: 1.5px solid var(--ink-1);
+  transition: var(--t);
+  cursor: pointer;
+}
+.mode-tab:last-child { border-right: none; }
+.mode-tab:hover:not(.on) { color: var(--blue); background: var(--blue-tint); }
+.mode-tab.on { background: var(--ink-1); color: white; }
+.mode-tab .mode-icon { font-size: 13px; }
+
+/* ──────────────────────────────────────── COMPARE PANEL */
+#comparePanel { display: none; }
+#comparePanel.active { display: block; }
+#searchPanel { display: block; }
+#searchPanel.hidden { display: none; }
+
+.compare-controls {
+  background: white;
+  border: 1.5px solid var(--ink-1);
+  box-shadow: 6px 6px 0 var(--ink-1);
+  padding: 24px 24px 20px;
+  margin-bottom: 20px;
+}
+.compare-controls-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 32px;
+}
+.compare-controls-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 0;
+  margin-top: 20px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.cc-field { display: flex; flex-direction: column; gap: 6px; }
+.cc-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cc-select {
+  appearance: none;
+  background: var(--paper) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%232a2a2c' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>") no-repeat right 10px center;
+  border: 1.5px solid var(--ink-1);
+  padding: 10px 32px 10px 12px;
+  font: inherit; font-size: 13px; font-weight: 500;
+  color: var(--ink-1);
+  outline: none;
+  width: 100%;
+  transition: var(--t);
+}
+.cc-select:focus { border-color: var(--blue); box-shadow: 4px 4px 0 var(--blue-tint); }
+
+.cc-org-a .cc-select { border-left: 4px solid var(--blue); }
+.cc-org-b .cc-select { border-left: 4px solid oklch(0.55 0.18 30); }
+
+.compare-run-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--ink-1); color: white;
+  border: none;
+  padding: 10px 24px;
+  font: inherit; font-size: 13px; font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: var(--t);
+  align-self: flex-end;
+}
+.compare-run-btn:hover { background: var(--blue); }
+
+/* compare result area */
+.cmp-result { display: none; }
+.cmp-result.active { display: block; }
+
+/* stat cards row */
+.cmp-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.cmp-card {
+  background: white;
+  border: 1.5px solid var(--ink-1);
+  overflow: hidden;
+}
+.cmp-card-header {
+  padding: 12px 16px 10px;
+  border-bottom: 1.5px solid var(--ink-1);
+  display: flex; align-items: baseline; gap: 10px;
+}
+.cmp-card-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.cmp-card-name {
+  font-size: 15px; font-weight: 700;
+  letter-spacing: -0.02em;
+  flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cmp-card-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  border-top: none;
+}
+.cmp-card-stat {
+  padding: 14px 16px;
+  border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.cmp-card-stat:last-child { border-right: none; }
+.cmp-card-stat .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px; color: var(--ink-4);
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.cmp-card-stat .val {
+  font-size: 22px; font-weight: 700;
+  letter-spacing: -0.025em;
+  font-feature-settings: 'tnum';
+  color: var(--ink-1);
+  line-height: 1;
+}
+.cmp-card-stat .sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px; color: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+.cmp-card-stat.blue .val { color: var(--blue); }
+.cmp-card-extra {
+  border-top: 1px solid var(--line);
+  padding: 10px 16px;
+  display: flex; gap: 20px;
+}
+.cmp-card-extra-item { display: flex; flex-direction: column; gap: 2px; }
+.cmp-card-extra-item .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: var(--ink-4);
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.cmp-card-extra-item .val {
+  font-size: 14px; font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* diff bar */
+.cmp-diff-bar {
+  margin-bottom: 24px;
+  background: white;
+  border: 1.5px solid var(--ink-1);
+  padding: 16px 20px;
+}
+.cmp-diff-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--ink-3);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.cmp-diff-row {
+  display: grid; grid-template-columns: 80px 1fr 80px;
+  align-items: center; gap: 12px;
+  margin-bottom: 10px;
+}
+.cmp-diff-row:last-child { margin-bottom: 0; }
+.cmp-diff-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--ink-3);
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.cmp-diff-label.right { text-align: right; }
+.cmp-diff-track {
+  display: flex; height: 6px; background: var(--paper-3); position: relative; overflow: hidden;
+}
+.cmp-diff-fill-a {
+  height: 100%; background: var(--blue);
+  transition: width .7s cubic-bezier(.4,0,.2,1);
+}
+.cmp-diff-fill-b {
+  height: 100%;
+  transition: width .7s cubic-bezier(.4,0,.2,1);
+}
+
+/* trend chart */
+.cmp-chart-wrap {
+  background: white;
+  border: 1.5px solid var(--ink-1);
+  margin-bottom: 24px;
+  padding: 20px 20px 16px;
+}
+.cmp-chart-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.cmp-chart-title {
+  font-size: 14px; font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.cmp-chart-legend {
+  display: flex; align-items: center; gap: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--ink-3);
+  letter-spacing: 0.04em;
+}
+.cmp-legend-dot {
+  display: inline-block; width: 8px; height: 8px;
+  border-radius: 50%; margin-right: 4px; vertical-align: middle;
+}
+.cmp-chart-canvas {
+  width: 100%; height: 160px;
+  position: relative; overflow: hidden;
+}
+.cmp-chart-canvas svg { display: block; width: 100%; height: 100%; }
+
+/* TOP videos */
+.cmp-tops {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 20px; margin-bottom: 24px;
+}
+.cmp-top-col {}
+.cmp-top-head {
+  display: flex; align-items: baseline; gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1.5px solid var(--ink-1);
+  margin-bottom: 0;
+}
+.cmp-top-head-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.cmp-top-head-name {
+  font-size: 13px; font-weight: 700; letter-spacing: -0.02em; flex: 1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cmp-top-head-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px; color: var(--ink-4);
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+
+.cmp-vid-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: var(--t);
+}
+.cmp-vid-row:hover { background: var(--blue-tint); padding-left: 6px; }
+.cmp-vid-row:last-child { border-bottom: none; }
+.cmp-vid-thumb {
+  width: 80px; flex-shrink: 0;
+  aspect-ratio: 16/9;
+  background: var(--paper-3);
+  overflow: hidden; position: relative;
+}
+.cmp-vid-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.cmp-vid-thumb-ph {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-4); font-size: 14px;
+}
+.cmp-vid-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.cmp-vid-rank {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px; color: var(--ink-4); letter-spacing: 0.04em;
+}
+.cmp-vid-title {
+  font-size: 12.5px; font-weight: 600;
+  letter-spacing: -0.01em; line-height: 1.35;
+  color: var(--ink-1);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.cmp-vid-stats {
+  display: flex; gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px; color: var(--ink-3); letter-spacing: 0.02em;
+}
+.cmp-vid-stat-v { color: var(--blue); font-weight: 600; }
+
+.cmp-empty {
+  padding: 48px 24px; text-align: center;
+  background: white; border: 1.5px solid var(--ink-1);
+}
+.cmp-empty-icon { font-size: 36px; margin-bottom: 12px; }
+.cmp-empty-text { font-size: 14px; font-weight: 600; letter-spacing: -0.02em; color: var(--ink-2); }
+.cmp-empty-sub { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--ink-4); margin-top: 4px; }
+
+@media (max-width: 860px) {
+  .compare-controls-grid { grid-template-columns: 1fr; }
+  .compare-controls-row { grid-template-columns: 1fr 1fr; }
+  .cmp-cards { grid-template-columns: 1fr; }
+  .cmp-tops { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -1715,6 +2023,19 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
     </div>
   </div>
 
+  <!-- MODE TABS -->
+  <div class="mode-tabs">
+    <button class="mode-tab on" id="tabSearch" onclick="switchMode('search')">
+      <span class="mode-icon">⌕</span> Search
+    </button>
+    <button class="mode-tab" id="tabCompare" onclick="switchMode('compare')">
+      <span class="mode-icon">⇄</span> Compare
+    </button>
+  </div>
+
+  <!-- SEARCH PANEL WRAPPER START -->
+  <div id="searchPanel">
+
   <div class="search-big">
     <span class="label">SEARCH</span>
     <input type="text" id="searchInput" placeholder="키워드를 입력하세요" autocomplete="off">
@@ -1765,12 +2086,73 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
     <span class="quick-label">Quick picks</span>
   </div>
   <div class="quick-note">* 쇼츠 베스트 · 댓글 많은 영상 · 중앙기관 TOP · 지방기관 TOP은 최근 3개월 데이터를 기준으로 합니다.</div>
+
+  </div><!-- /searchPanel -->
+
+  <!-- COMPARE PANEL -->
+  <div id="comparePanel">
+    <div class="compare-controls">
+      <div class="compare-controls-grid">
+        <div class="cc-field cc-org-a">
+          <span class="cc-label">기관 A</span>
+          <select class="cc-select" id="cmpOrgA">
+            <option value="">기관을 선택하세요</option>
+          </select>
+        </div>
+        <div class="cc-field cc-org-b">
+          <span class="cc-label">기관 B</span>
+          <select class="cc-select" id="cmpOrgB">
+            <option value="">기관을 선택하세요</option>
+          </select>
+        </div>
+      </div>
+      <div class="compare-controls-row">
+        <div class="cc-field">
+          <span class="cc-label">기간</span>
+          <select class="cc-select" id="cmpYear">
+            <option value="">전체 기간</option>
+          </select>
+        </div>
+        <div class="cc-field">
+          <span class="cc-label">지표</span>
+          <select class="cc-select" id="cmpMetric">
+            <option value="v">조회수</option>
+            <option value="l">좋아요</option>
+            <option value="c">댓글수</option>
+          </select>
+        </div>
+        <div class="cc-field">
+          <span class="cc-label">영상 유형</span>
+          <select class="cc-select" id="cmpVidType">
+            <option value="">전체</option>
+            <option value="일반">일반</option>
+            <option value="쇼츠">쇼츠</option>
+          </select>
+        </div>
+        <div class="cc-field" style="justify-content:flex-end">
+          <button class="compare-run-btn" onclick="runCompare()">
+            비교 분석 →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div><!-- /comparePanel -->
+
 </section>
 
 <!-- MAIN -->
 <div class="main">
   <main>
-    <!-- SUMMARY BAND: stats + top channels -->
+    <!-- COMPARE RESULT AREA -->
+    <div id="cmpResult" class="cmp-result">
+      <div id="cmpSummaryBand"></div>
+      <div id="cmpDiffBar"></div>
+      <div id="cmpChartWrap"></div>
+      <div id="cmpTops"></div>
+    </div>
+
+    <!-- SEARCH RESULT SUMMARY BAND: stats + top channels -->
+    <div id="searchSummaryBand">
     <div class="summary-band">
       <div class="summary-col">
         <div class="summary-col-head">
@@ -1791,7 +2173,9 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
         <div class="bars summary-top" id="topOrgChart"></div>
       </div>
     </div>
+    </div><!-- /searchSummaryBand -->
 
+    <div id="searchResultArea">
     <div class="toolbar">
       <div>
         <div class="tool-count" id="resultCount"></div>
@@ -1822,6 +2206,7 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
 
     <div id="resultArea"></div>
     <div id="pagination"></div>
+    </div><!-- /searchResultArea -->
   </main>
 </div>
 
@@ -1866,7 +2251,21 @@ let currentView = 'list';
 let activeOrgType = '';
 let activeVidType = '';
 let chartMetric = 'v'; // 'v' | 'l' | 'c'
+let currentMode = 'search'; // 'search' | 'compare'
 const PAGE_SIZE = 15;
+
+// ─── Mode Switching ───
+function switchMode(mode) {
+  currentMode = mode;
+  const isSearch = mode === 'search';
+  document.getElementById('tabSearch').classList.toggle('on', isSearch);
+  document.getElementById('tabCompare').classList.toggle('on', !isSearch);
+  document.getElementById('searchPanel').classList.toggle('hidden', !isSearch);
+  document.getElementById('comparePanel').classList.toggle('active', !isSearch);
+  document.getElementById('searchSummaryBand').style.display = isSearch ? '' : 'none';
+  document.getElementById('searchResultArea').style.display = isSearch ? '' : 'none';
+  document.getElementById('cmpResult').classList.toggle('active', !isSearch);
+}
 
 // ─── Topbar date ───
 (function () {
@@ -1996,6 +2395,18 @@ function initApp(json) {
   currentPage = 1;
   document.getElementById('searchInput').value = '';
   activeOrgType = ''; activeVidType = '';
+
+  // populate compare dropdowns
+  const orgs = DB.meta?.orgs || [...new Set(DB.data.map(d => d.o))].filter(Boolean).sort();
+  ['cmpOrgA','cmpOrgB'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value="">기관을 선택하세요</option>';
+    orgs.forEach(o => { const opt = document.createElement('option'); opt.value = o; opt.textContent = o; sel.appendChild(opt); });
+  });
+  const cmpYearSel = document.getElementById('cmpYear');
+  cmpYearSel.innerHTML = '<option value="">전체 기간</option>';
+  const years2 = DB.meta?.years || [];
+  years2.forEach(y => { const opt = document.createElement('option'); opt.value = y; opt.textContent = y + '년'; cmpYearSel.appendChild(opt); });
 
   setView('list');
   buildPresets();
@@ -2478,6 +2889,269 @@ function closeModalDirect() {
   document.body.style.overflow = '';
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
+
+// ─── COMPARE ───
+const COLOR_A = '#1a3eff';
+const COLOR_B = 'oklch(0.55 0.18 30)';
+const COLOR_B_HEX = '#c84b1a';
+
+function runCompare() {
+  if (!DB) return;
+  const orgA = document.getElementById('cmpOrgA').value;
+  const orgB = document.getElementById('cmpOrgB').value;
+  const year = document.getElementById('cmpYear').value;
+  const metric = document.getElementById('cmpMetric').value;
+  const vidType = document.getElementById('cmpVidType').value;
+
+  const result = document.getElementById('cmpResult');
+  result.classList.add('active');
+
+  if (!orgA && !orgB) {
+    result.querySelector('#cmpSummaryBand').innerHTML = `
+      <div class="cmp-empty"><div class="cmp-empty-icon">⇄</div>
+      <div class="cmp-empty-text">기관을 선택해 주세요</div>
+      <div class="cmp-empty-sub">기관 A, B 중 하나 이상 선택 후 비교 분석 버튼을 누르세요</div></div>`;
+    ['cmpDiffBar','cmpChartWrap','cmpTops'].forEach(id => document.getElementById(id).innerHTML = '');
+    return;
+  }
+
+  let base = DB.data;
+  if (year) base = base.filter(d => d.yw && d.yw.slice(0,4) === year);
+  if (vidType) base = base.filter(d => d.t === vidType);
+
+  const dataA = orgA ? base.filter(d => d.o === orgA) : [];
+  const dataB = orgB ? base.filter(d => d.o === orgB) : [];
+
+  // aggregate stats
+  const agg = (arr) => ({
+    count: arr.length,
+    v: arr.reduce((s,d)=>s+d.v,0),
+    l: arr.reduce((s,d)=>s+d.l,0),
+    c: arr.reduce((s,d)=>s+d.c,0),
+    avgV: arr.length ? Math.round(arr.reduce((s,d)=>s+d.v,0)/arr.length) : 0,
+    topV: arr.length ? Math.max(...arr.map(d=>d.v)) : 0,
+  });
+  const statA = agg(dataA), statB = agg(dataB);
+
+  renderCmpCards(orgA, orgB, statA, statB, metric);
+  renderCmpDiff(orgA, orgB, statA, statB);
+  renderCmpChart(orgA, orgB, dataA, dataB, metric);
+  renderCmpTops(orgA, orgB, dataA, dataB, metric);
+}
+
+function renderCmpCards(orgA, orgB, statA, statB, metric) {
+  const METRIC_LABEL = {v:'조회수', l:'좋아요', c:'댓글수'};
+  const cards = [
+    { name: orgA||'(미선택)', stat: statA, color: COLOR_A },
+    { name: orgB||'(미선택)', stat: statB, color: COLOR_B_HEX },
+  ];
+  document.getElementById('cmpSummaryBand').innerHTML = `
+    <div class="cmp-cards">
+      ${cards.map(({name, stat, color}) => `
+        <div class="cmp-card">
+          <div class="cmp-card-header">
+            <div class="cmp-card-dot" style="background:${color}"></div>
+            <div class="cmp-card-name">${esc(name)}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-4);letter-spacing:0.04em">${stat.count.toLocaleString()} VIDEOS</div>
+          </div>
+          <div class="cmp-card-stats">
+            <div class="cmp-card-stat blue">
+              <span class="lbl">조회수 합계</span>
+              <span class="val">${fmtN(stat.v)}</span>
+              <span class="sub">평균 ${fmtN(stat.avgV)}</span>
+            </div>
+            <div class="cmp-card-stat">
+              <span class="lbl">좋아요 합계</span>
+              <span class="val">${fmtN(stat.l)}</span>
+              <span class="sub">—</span>
+            </div>
+            <div class="cmp-card-stat">
+              <span class="lbl">댓글 합계</span>
+              <span class="val">${fmtN(stat.c)}</span>
+              <span class="sub">—</span>
+            </div>
+          </div>
+          <div class="cmp-card-extra">
+            <div class="cmp-card-extra-item">
+              <span class="lbl">최고 조회수</span>
+              <span class="val">${fmtN(stat.topV)}</span>
+            </div>
+            <div class="cmp-card-extra-item">
+              <span class="lbl">좋아요율</span>
+              <span class="val">${stat.v > 0 ? (stat.l/stat.v*100).toFixed(2)+'%' : '—'}</span>
+            </div>
+            <div class="cmp-card-extra-item">
+              <span class="lbl">댓글율</span>
+              <span class="val">${stat.v > 0 ? (stat.c/stat.v*100).toFixed(2)+'%' : '—'}</span>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderCmpDiff(orgA, orgB, statA, statB) {
+  const metrics = [
+    { key:'v', label:'조회수' },
+    { key:'l', label:'좋아요' },
+    { key:'c', label:'댓글' },
+  ];
+  const rows = metrics.map(m => {
+    const a = statA[m.key] || 0, b = statB[m.key] || 0;
+    const total = a + b || 1;
+    const ratioA = Math.round(a/total*100);
+    const ratioB = 100 - ratioA;
+    return `
+      <div class="cmp-diff-row">
+        <div style="text-align:right">
+          <div style="font-size:12px;font-weight:700;letter-spacing:-0.02em;font-feature-settings:'tnum'">${fmtN(a)}</div>
+        </div>
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-4);letter-spacing:0.06em;text-transform:uppercase;text-align:center;margin-bottom:4px">${m.label}</div>
+          <div class="cmp-diff-track">
+            <div class="cmp-diff-fill-a" style="width:${ratioA}%"></div>
+            <div class="cmp-diff-fill-b" style="width:${ratioB}%;background:${COLOR_B_HEX};opacity:0.8"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-4);margin-top:3px">
+            <span style="color:${COLOR_A}">${ratioA}%</span>
+            <span style="color:${COLOR_B_HEX}">${ratioB}%</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:-0.02em;font-feature-settings:'tnum'">${fmtN(b)}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('cmpDiffBar').innerHTML = `
+    <div class="cmp-diff-bar">
+      <div class="cmp-diff-title">지표 비교</div>
+      <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.04em;margin-bottom:12px">
+        <span style="color:${COLOR_A}">${esc(orgA||'A')}</span>
+        <span style="color:${COLOR_B_HEX}">${esc(orgB||'B')}</span>
+      </div>
+      ${rows}
+    </div>`;
+}
+
+function renderCmpChart(orgA, orgB, dataA, dataB, metric) {
+  const METRIC_LABEL = {v:'조회수', l:'좋아요', c:'댓글수'};
+  // aggregate by week
+  const byWkA = {}, byWkB = {};
+  dataA.forEach(d => { if(d.yw) byWkA[d.yw] = (byWkA[d.yw]||0) + (d[metric]||0); });
+  dataB.forEach(d => { if(d.yw) byWkB[d.yw] = (byWkB[d.yw]||0) + (d[metric]||0); });
+  const allWeeks = [...new Set([...Object.keys(byWkA), ...Object.keys(byWkB)])].sort();
+
+  if (allWeeks.length < 2) {
+    document.getElementById('cmpChartWrap').innerHTML = '';
+    return;
+  }
+
+  const seriesA = allWeeks.map(w => byWkA[w]||0);
+  const seriesB = allWeeks.map(w => byWkB[w]||0);
+  const allVals = [...seriesA, ...seriesB];
+  const maxVal = Math.max(...allVals) || 1;
+
+  const W = 800, H = 160, padX = 8, padY = 8;
+  const ptA = seriesA.map((v,i) => {
+    const x = (i / (allWeeks.length-1)) * (W - padX*2) + padX;
+    const y = H - padY - (v/maxVal) * (H - padY*2);
+    return [x,y];
+  });
+  const ptB = seriesB.map((v,i) => {
+    const x = (i / (allWeeks.length-1)) * (W - padX*2) + padX;
+    const y = H - padY - (v/maxVal) * (H - padY*2);
+    return [x,y];
+  });
+
+  const mkPath = pts => pts.map(([x,y],i)=>(i===0?`M${x.toFixed(1)},${y.toFixed(1)}`:`L${x.toFixed(1)},${y.toFixed(1)}`)).join(' ');
+  const mkArea = (pts) => {
+    const line = mkPath(pts);
+    const last = pts[pts.length-1];
+    const first = pts[0];
+    return line + ` L${last[0].toFixed(1)},${H} L${first[0].toFixed(1)},${H} Z`;
+  };
+
+  const svgW = W, svgH = H;
+  const svgContent = `
+    <path d="${mkArea(ptA)}" fill="${COLOR_A}" opacity="0.08"/>
+    <path d="${mkPath(ptA)}" fill="none" stroke="${COLOR_A}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="${mkArea(ptB)}" fill="${COLOR_B_HEX}" opacity="0.08"/>
+    <path d="${mkPath(ptB)}" fill="none" stroke="${COLOR_B_HEX}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${ptA[ptA.length-1][0].toFixed(1)}" cy="${ptA[ptA.length-1][1].toFixed(1)}" r="3" fill="${COLOR_A}"/>
+    <circle cx="${ptB[ptB.length-1][0].toFixed(1)}" cy="${ptB[ptB.length-1][1].toFixed(1)}" r="3" fill="${COLOR_B_HEX}"/>
+  `;
+
+  document.getElementById('cmpChartWrap').innerHTML = `
+    <div class="cmp-chart-wrap">
+      <div class="cmp-chart-head">
+        <div class="cmp-chart-title">주차별 ${METRIC_LABEL[metric]||metric} 추이</div>
+        <div class="cmp-chart-legend">
+          <span><span class="cmp-legend-dot" style="background:${COLOR_A}"></span>${esc(orgA||'A')}</span>
+          <span><span class="cmp-legend-dot" style="background:${COLOR_B_HEX}"></span>${esc(orgB||'B')}</span>
+        </div>
+      </div>
+      <div class="cmp-chart-canvas">
+        <svg viewBox="0 0 ${svgW} ${svgH}" preserveAspectRatio="none">${svgContent}</svg>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-4);margin-top:6px;letter-spacing:0.04em">
+        <span>${esc(allWeeks[0])}</span>
+        <span>${esc(allWeeks[allWeeks.length-1])}</span>
+      </div>
+    </div>`;
+}
+
+function renderCmpTops(orgA, orgB, dataA, dataB, metric) {
+  const METRIC_LABEL = {v:'조회수', l:'좋아요', c:'댓글수'};
+  const mkCol = (name, data, color, ns) => {
+    const sorted = [...data].sort((a,b)=>(b[metric]||0)-(a[metric]||0)).slice(0,5);
+    if (!sorted.length) return `
+      <div class="cmp-top-col">
+        <div class="cmp-top-head">
+          <div class="cmp-top-head-dot" style="background:${color}"></div>
+          <div class="cmp-top-head-name">${esc(name||'(미선택)')}</div>
+          <div class="cmp-top-head-tag">TOP 5 · ${METRIC_LABEL[metric]||metric}</div>
+        </div>
+        <div style="padding:24px;text-align:center;color:var(--ink-4);font-family:'JetBrains Mono',monospace;font-size:10.5px">NO DATA</div>
+      </div>`;
+    window.__cmpVidStore = window.__cmpVidStore || {};
+    const rows = sorted.map((d,i) => {
+      const thumb = getThumbnail(d.u);
+      const storeKey = `cmpv_${ns}_${i}`;
+      window.__cmpVidStore[storeKey] = d;
+      return `
+        <div class="cmp-vid-row" onclick="openModal(window.__cmpVidStore['${storeKey}'])">
+          <div class="cmp-vid-thumb">
+            ${thumb ? `<img src="${thumb}" loading="lazy" alt="" onerror="this.style.display='none'">` : ''}
+            <div class="cmp-vid-thumb-ph" style="${thumb?'display:none':''}">▶</div>
+          </div>
+          <div class="cmp-vid-body">
+            <div class="cmp-vid-rank">${String(i+1).padStart(2,'0')} · ${esc(d.wl||d.yw||'')}</div>
+            <div class="cmp-vid-title">${esc(d.ti||'')}</div>
+            <div class="cmp-vid-stats">
+              <span class="cmp-vid-stat-v">${fmtN(d.v)}</span>
+              <span>▲${fmtN(d.l)}</span>
+              <span>💬${fmtN(d.c)}</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+    return `
+      <div class="cmp-top-col">
+        <div class="cmp-top-head">
+          <div class="cmp-top-head-dot" style="background:${color}"></div>
+          <div class="cmp-top-head-name">${esc(name||'(미선택)')}</div>
+          <div class="cmp-top-head-tag">TOP 5 · ${METRIC_LABEL[metric]||metric}</div>
+        </div>
+        ${rows}
+      </div>`;
+  };
+
+  document.getElementById('cmpTops').innerHTML = `
+    <div class="cmp-tops">
+      ${mkCol(orgA, dataA, COLOR_A, 'a')}
+      ${mkCol(orgB, dataB, COLOR_B_HEX, 'b')}
+    </div>`;
+}
 
 // export
 function exportExcel() {
