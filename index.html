@@ -1615,6 +1615,8 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
 .mode-tab:hover:not(.on) { color: var(--blue); background: var(--blue-tint); }
 .mode-tab.on { background: var(--ink-1); color: white; }
 .mode-tab .mode-icon { font-size: 13px; }
+.mode-tab-ext { text-decoration: none; color: var(--ink-3); }
+.mode-tab-ext:hover { color: var(--blue); background: var(--blue-tint); }
 
 /* ──────────────────────────────────────── COMPARE PANEL */
 #comparePanel { display: none; }
@@ -2282,6 +2284,10 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
     <button class="mode-tab" id="tabCompare" onclick="switchMode('compare')">
       <span class="mode-icon">⇄</span> Compare
     </button>
+    <a class="mode-tab mode-tab-ext" href="https://inkdot.kr" target="_blank" rel="noopener">
+      <span class="mode-icon">◈</span> 분석
+      <svg style="width:10px;height:10px;opacity:0.5;margin-left:2px" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1.5 8.5l7-7M4 1.5h4v4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
   </div>
 
   <!-- SEARCH PANEL WRAPPER START -->
