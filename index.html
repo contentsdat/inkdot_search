@@ -1628,7 +1628,7 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
   background: white;
   border: 1.5px solid var(--ink-1);
   box-shadow: 6px 6px 0 var(--ink-1);
-  padding: 24px 24px 20px;
+  padding: 16px 24px 20px;
   margin-bottom: 20px;
 }
 .compare-controls-grid {
@@ -1683,6 +1683,148 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
   flex-shrink: 0;
 }
 .compare-run-btn:hover { background: var(--blue); }
+
+/* ── 새 Compare 컨트롤 레이아웃 ── */
+.cmp-org-row {
+  display: flex; align-items: flex-end; gap: 12px;
+  margin-bottom: 0;
+}
+.cmp-org-slot {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.cmp-add-btn {
+  width: 40px; height: 40px; flex-shrink: 0;
+  background: transparent;
+  border: 1.5px dashed var(--line-2);
+  color: var(--ink-3);
+  font-size: 20px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--t);
+  cursor: pointer;
+  align-self: flex-end;
+}
+.cmp-add-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-tint); }
+.cmp-org-b-wrap {
+  display: none;
+  align-items: flex-end; gap: 8px;
+  flex: 1; min-width: 0;
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+.cmp-org-b-wrap.visible {
+  display: flex;
+  opacity: 1;
+}
+.cmp-remove-btn {
+  width: 32px; height: 40px; flex-shrink: 0;
+  background: transparent; border: none;
+  color: var(--ink-3); font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: var(--t);
+  align-self: flex-end;
+}
+.cmp-remove-btn:hover { color: var(--red, #e03); }
+.cmp-vs-divider {
+  flex-shrink: 0; align-self: flex-end;
+  height: 40px; display: flex; align-items: center;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  color: var(--ink-4);
+  padding: 0 4px;
+}
+
+/* 단독 분석 카드 */
+.solo-card {
+  background: white;
+  border: 1.5px solid var(--ink-1);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.solo-card-header {
+  padding: 18px 22px 16px;
+  border-bottom: 1.5px solid var(--ink-1);
+  display: flex; align-items: baseline; gap: 12px;
+}
+.solo-card-dot {
+  width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0;
+  background: var(--blue);
+}
+.solo-card-name {
+  font-size: 22px; font-weight: 700; letter-spacing: -0.025em; flex: 1;
+}
+.solo-card-tag {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--ink-4);
+}
+.solo-stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+}
+.solo-stat {
+  padding: 18px 20px;
+  border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 5px;
+}
+.solo-stat:last-child { border-right: none; }
+.solo-stat .lbl {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 10px; color: var(--ink-4);
+  letter-spacing: 0.01em; text-transform: uppercase;
+}
+.solo-stat .val {
+  font-size: 28px; font-weight: 700;
+  letter-spacing: -0.03em;
+  font-feature-settings: 'tnum';
+  color: var(--ink-1); line-height: 1;
+}
+.solo-stat .val.blue { color: var(--blue); }
+.solo-stat .sub {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 11px; color: var(--ink-3); letter-spacing: 0.01em;
+}
+@media (max-width: 640px) {
+  .solo-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .solo-stat:nth-child(2) { border-right: none; }
+  .solo-stat:nth-child(3) { border-top: 1px solid var(--line); }
+}
+.solo-trend-wrap {
+  border-top: 1px solid var(--line);
+  padding: 18px 22px 16px;
+}
+.solo-trend-label {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 10px; color: var(--ink-3);
+  letter-spacing: 0.02em; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.solo-top-wrap {
+  background: white;
+  margin-bottom: 24px;
+}
+.solo-top-header {
+  padding: 14px 0;
+  border-bottom: 1.5px solid var(--ink-1);
+  display: flex; align-items: baseline; justify-content: space-between;
+}
+.solo-top-title {
+  font-size: 15px; font-weight: 700; letter-spacing: -0.02em;
+}
+.solo-top-tag {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 10px; color: var(--ink-4); letter-spacing: 0.01em; text-transform: uppercase;
+}
+.solo-type-wrap {
+  background: white; border: 1.5px solid var(--ink-1);
+  padding: 20px 22px; margin-bottom: 24px;
+  display: flex; align-items: center; gap: 32px;
+}
+.solo-type-label {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 10px; color: var(--ink-3);
+  letter-spacing: 0.02em; text-transform: uppercase;
+  margin-bottom: 10px;
+}
 
 /* compare result area */
 .cmp-result { display: none; }
@@ -2349,22 +2491,35 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
   <!-- COMPARE PANEL -->
   <div id="comparePanel">
     <div class="compare-controls">
-      <div class="compare-controls-grid">
-        <div class="cc-field cc-org-a">
-          <span class="cc-label">기관 A</span>
-          <select class="cc-select" id="cmpOrgA">
+
+      <!-- 기관 선택 행 -->
+      <div class="cmp-org-row">
+        <!-- 기관 A (항상 표시) -->
+        <div class="cmp-org-slot">
+          <span class="cc-label" id="labelOrgA">기관 선택</span>
+          <select class="cc-select" id="cmpOrgA" style="border-left:4px solid var(--blue)" onchange="onOrgAChange()">
             <option value="">기관을 선택하세요</option>
           </select>
         </div>
-        <div class="cc-field cc-org-b">
-          <span class="cc-label">기관 B</span>
-          <select class="cc-select" id="cmpOrgB">
-            <option value="">기관을 선택하세요</option>
-          </select>
+
+        <!-- + 버튼 -->
+        <button class="cmp-add-btn" id="cmpAddBtn" onclick="toggleOrgB()" title="기관 추가하여 비교">+</button>
+
+        <!-- 기관 B (슬라이드인) -->
+        <div class="cmp-org-b-wrap" id="cmpOrgBWrap">
+          <div class="cmp-vs-divider">VS</div>
+          <div class="cmp-org-slot">
+            <span class="cc-label">비교 기관</span>
+            <select class="cc-select" id="cmpOrgB" style="border-left:4px solid oklch(0.55 0.18 30)">
+              <option value="">기관을 선택하세요</option>
+            </select>
+          </div>
+          <button class="cmp-remove-btn" onclick="toggleOrgB()" title="비교 기관 제거">✕</button>
         </div>
       </div>
+
+      <!-- 필터 행 -->
       <div class="compare-controls-row">
-        <!-- 기간 범위 -->
         <div class="cc-field">
           <span class="cc-label">기간</span>
           <div style="display:flex;align-items:center;gap:6px">
@@ -2377,16 +2532,14 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
             </select>
           </div>
         </div>
-        <!-- 지표 멀티 토글 -->
         <div class="cc-field">
-          <span class="cc-label">비교 지표 <span style="color:var(--ink-4)">(복수 선택)</span></span>
+          <span class="cc-label" id="cmpMetricLabel">지표 <span style="color:var(--ink-4)">(복수 선택)</span></span>
           <div class="cmp-metric-btns" id="cmpMetricBtns">
             <button class="cmp-metric-btn on" data-m="v">조회수</button>
             <button class="cmp-metric-btn" data-m="l">좋아요</button>
             <button class="cmp-metric-btn" data-m="c">댓글</button>
           </div>
         </div>
-        <!-- 영상 유형 + 실행 버튼 -->
         <div class="cc-field">
           <span class="cc-label">영상 유형</span>
           <div style="display:flex;gap:8px;align-items:stretch">
@@ -2395,10 +2548,11 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
               <option value="일반">일반</option>
               <option value="쇼츠">쇼츠</option>
             </select>
-            <button class="compare-run-btn" onclick="runCompare()">비교 →</button>
+            <button class="compare-run-btn" id="cmpRunBtn" onclick="runCompare()">분석 →</button>
           </div>
         </div>
       </div>
+
     </div>
   </div><!-- /comparePanel -->
 
@@ -2526,7 +2680,10 @@ function switchMode(mode) {
   document.getElementById('comparePanel').classList.toggle('active', !isSearch);
   document.getElementById('searchSummaryBand').style.display = isSearch ? '' : 'none';
   document.getElementById('searchResultArea').style.display = isSearch ? '' : 'none';
-  document.getElementById('cmpResult').classList.toggle('active', !isSearch);
+  // Compare 탭 진입 시 결과 초기화
+  if (!isSearch) {
+    document.getElementById('cmpResult').classList.remove('active');
+  }
 }
 
 // ─── Topbar date ───
@@ -3223,6 +3380,45 @@ const COLOR_B_HEX = '#c84b1a';
 const METRIC_LABEL = {v:'조회수', l:'좋아요', c:'댓글수'};
 const METRIC_COLOR = {v:'#1a3eff', l:'#059669', c:'#d97706'};
 
+let cmpOrgBVisible = false;
+
+function toggleOrgB() {
+  cmpOrgBVisible = !cmpOrgBVisible;
+  const wrap = document.getElementById('cmpOrgBWrap');
+  const addBtn = document.getElementById('cmpAddBtn');
+  const labelA = document.getElementById('labelOrgA');
+  const metricLabel = document.getElementById('cmpMetricLabel');
+  const runBtn = document.getElementById('cmpRunBtn');
+  wrap.classList.toggle('visible', cmpOrgBVisible);
+  addBtn.style.display = cmpOrgBVisible ? 'none' : '';
+  if (cmpOrgBVisible) {
+    labelA.textContent = '기관 A';
+    metricLabel.innerHTML = '비교 지표 <span style="color:var(--ink-4)">(복수 선택)</span>';
+    runBtn.textContent = '비교 →';
+    // 기관 B 선택 초기화
+    document.getElementById('cmpOrgB').value = '';
+  } else {
+    labelA.textContent = '기관 선택';
+    document.getElementById('cmpOrgB').value = '';
+    metricLabel.innerHTML = '분석 지표 <span style="color:var(--ink-4)">(복수 선택)</span>';
+    runBtn.textContent = '분석 →';
+  }
+  // 결과 초기화
+  clearCmpResult();
+}
+
+function onOrgAChange() {
+  clearCmpResult();
+}
+
+function clearCmpResult() {
+  const result = document.getElementById('cmpResult');
+  result.classList.remove('active');
+  ['cmpSummaryBand','cmpDiffBar','cmpTypeChart','cmpChartWrap','cmpTops'].forEach(id => {
+    document.getElementById(id).innerHTML = '';
+  });
+}
+
 function getActiveMetrics() {
   return [...document.querySelectorAll('.cmp-metric-btn.on')].map(b => b.dataset.m);
 }
@@ -3230,7 +3426,7 @@ function getActiveMetrics() {
 function runCompare() {
   if (!DB) return;
   const orgA = document.getElementById('cmpOrgA').value;
-  const orgB = document.getElementById('cmpOrgB').value;
+  const orgB = cmpOrgBVisible ? document.getElementById('cmpOrgB').value : '';
   const yearFrom = document.getElementById('cmpYearFrom').value;
   const yearTo   = document.getElementById('cmpYearTo').value;
   const vidType  = document.getElementById('cmpVidType').value;
@@ -3239,23 +3435,31 @@ function runCompare() {
   const result = document.getElementById('cmpResult');
   result.classList.add('active');
 
-  if (!orgA && !orgB) {
+  if (!orgA) {
     document.getElementById('cmpSummaryBand').innerHTML = `
-      <div class="cmp-empty"><div class="cmp-empty-icon">⇄</div>
+      <div class="cmp-empty"><div class="cmp-empty-icon">◎</div>
       <div class="cmp-empty-text">기관을 선택해 주세요</div>
-      <div class="cmp-empty-sub">기관 A, B 중 하나 이상 선택 후 비교 분석 버튼을 누르세요</div></div>`;
+      <div class="cmp-empty-sub">기관을 선택 후 분석 버튼을 누르세요</div></div>`;
     ['cmpDiffBar','cmpTypeChart','cmpChartWrap','cmpTops'].forEach(id => document.getElementById(id).innerHTML = '');
     return;
   }
 
-  // filter base data by year range and vid type
+  // filter base data
   let base = DB.data;
   if (yearFrom) base = base.filter(d => d.yw && d.yw.slice(0,4) >= yearFrom);
   if (yearTo)   base = base.filter(d => d.yw && d.yw.slice(0,4) <= yearTo);
   if (vidType)  base = base.filter(d => d.t === vidType);
 
-  const dataA = orgA ? base.filter(d => d.o === orgA) : [];
-  const dataB = orgB ? base.filter(d => d.o === orgB) : [];
+  const dataA = base.filter(d => d.o === orgA);
+
+  // 단독 분석 모드
+  if (!cmpOrgBVisible || !orgB) {
+    renderSoloAnalysis(orgA, dataA, metrics);
+    return;
+  }
+
+  // A vs B 비교 모드
+  const dataB = base.filter(d => d.o === orgB);
 
   const agg = (arr) => ({
     count: arr.length,
@@ -3274,6 +3478,197 @@ function runCompare() {
   renderCmpTypeChart(orgA, orgB, statA, statB);
   renderCmpChart(orgA, orgB, dataA, dataB, metrics);
   renderCmpTops(orgA, orgB, dataA, dataB, metrics);
+}
+
+// ─── 단독 기관 분석 ───
+function renderSoloAnalysis(orgName, data, metrics) {
+  if (!data.length) {
+    document.getElementById('cmpSummaryBand').innerHTML = `
+      <div class="cmp-empty"><div class="cmp-empty-icon">📭</div>
+      <div class="cmp-empty-text">데이터가 없어요</div>
+      <div class="cmp-empty-sub">해당 기관의 영상 데이터가 없습니다</div></div>`;
+    ['cmpDiffBar','cmpTypeChart','cmpChartWrap','cmpTops'].forEach(id => document.getElementById(id).innerHTML = '');
+    return;
+  }
+
+  const totalV = data.reduce((s,d)=>s+d.v,0);
+  const totalL = data.reduce((s,d)=>s+d.l,0);
+  const totalC = data.reduce((s,d)=>s+d.c,0);
+  const avgV   = Math.round(totalV / data.length);
+  const topV   = Math.max(...data.map(d=>d.v));
+  const shorts  = data.filter(d=>d.t==='쇼츠').length;
+  const normal  = data.filter(d=>d.t==='일반').length;
+  const orgType = data[0]?.ot || '';
+  const er = totalV > 0 ? ((totalL + totalC) / totalV * 100).toFixed(2) : '—';
+
+  // ── 요약 카드
+  document.getElementById('cmpSummaryBand').innerHTML = `
+    <div class="solo-card">
+      <div class="solo-card-header">
+        <div class="solo-card-dot"></div>
+        <div class="solo-card-name">${esc(orgName)}</div>
+        <div class="solo-card-tag">${esc(orgType)} · SOLO ANALYSIS</div>
+      </div>
+      <div class="solo-stats-grid">
+        <div class="solo-stat">
+          <span class="lbl">총 영상 수</span>
+          <span class="val">${data.length.toLocaleString()}<span style="font-size:14px;font-weight:500;color:var(--ink-3);margin-left:3px">편</span></span>
+          <span class="sub">쇼츠 ${shorts}편 · 일반 ${normal}편</span>
+        </div>
+        <div class="solo-stat">
+          <span class="lbl">총 조회수</span>
+          <span class="val blue">${fmtN(totalV)}</span>
+          <span class="sub">평균 ${fmtN(avgV)}</span>
+        </div>
+        <div class="solo-stat">
+          <span class="lbl">총 좋아요</span>
+          <span class="val">${fmtN(totalL)}</span>
+          <span class="sub">좋아요율 ${totalV>0?(totalL/totalV*100).toFixed(2)+'%':'—'}</span>
+        </div>
+        <div class="solo-stat">
+          <span class="lbl">총 댓글</span>
+          <span class="val">${fmtN(totalC)}</span>
+          <span class="sub">참여율(ER) ${er}%</span>
+        </div>
+      </div>
+    </div>`;
+
+  // ── 영상 유형 + 월별 트렌드
+  const shortsRatio = data.length > 0 ? shorts / data.length : 0;
+  const donutSvg = mkDonut(shorts, normal, COLOR_A, 140);
+
+  // 월별 집계
+  const toMonth = yw => (yw||'').slice(0,7);
+  const byMon = {};
+  const mk0 = (metrics.length ? metrics : ['v'])[0];
+  data.forEach(d => {
+    const m = toMonth(d.yw); if(!m) return;
+    byMon[m] = (byMon[m]||0) + (d[mk0]||0);
+  });
+  const months = Object.keys(byMon).sort();
+  const vals = months.map(m => byMon[m]);
+  const maxVal = Math.max(...vals) || 1;
+
+  let trendSvg = '';
+  if (months.length >= 2) {
+    const W=600, H=80, padX=6, padY=8;
+    const n = months.length;
+    const pts = vals.map((v,i)=>({
+      x: n>1?(i/(n-1))*(W-padX*2)+padX:W/2,
+      y: H-padY-(v/maxVal)*(H-padY*2)
+    }));
+    const linePath = pts.map((p,i)=>i===0?`M${p.x.toFixed(1)},${p.y.toFixed(1)}`:`L${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    const areaPath = linePath + ` L${pts[pts.length-1].x.toFixed(1)},${H} L${pts[0].x.toFixed(1)},${H} Z`;
+    const step = Math.max(1, Math.floor(n/8));
+    const xlabels = months.map((m,i) => {
+      if (i % step !== 0 && i !== n-1) return '';
+      const x = n>1?(i/(n-1))*(W-padX*2)+padX:W/2;
+      return `<text x="${x.toFixed(1)}" y="${H+14}" text-anchor="middle" font-family="'Pretendard',-apple-system,sans-serif" font-size="8" fill="var(--ink-4)">${m.slice(2)}</text>`;
+    }).join('');
+
+    // 호버 닷 (모든 포인트)
+    const dots = pts.map((p,i)=>`<circle class="solo-trend-dot" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="${COLOR_A}" opacity="0" data-idx="${i}"/>`).join('');
+
+    const tooltipDataStr = JSON.stringify({months, vals, mk: mk0, label: METRIC_LABEL[mk0]})
+      .replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+    trendSvg = `
+    <div style="position:relative">
+      <svg id="soloTrendSvg" viewBox="0 0 ${W} ${H+16}" preserveAspectRatio="none"
+        style="width:100%;height:90px;display:block;cursor:crosshair"
+        data-tooltip="${tooltipDataStr}"
+        data-w="${W}" data-h="${H}" data-padx="${padX}" data-pady="${padY}" data-n="${n}"
+        onmousemove="soloTrendHover(event,this)" onmouseleave="soloTrendHide()">
+        <path d="${areaPath}" fill="${COLOR_A}" opacity="0.08"/>
+        <path d="${linePath}" fill="none" stroke="${COLOR_A}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        ${dots}
+        <line id="soloHoverLine" x1="0" y1="0" x2="0" y2="${H}" stroke="${COLOR_A}" stroke-width="1" stroke-dasharray="3 2" opacity="0" pointer-events="none"/>
+        <circle id="soloHoverDot" cx="0" cy="0" r="4" fill="${COLOR_A}" opacity="0" pointer-events="none"/>
+        ${xlabels}
+      </svg>
+      <div id="soloTrendTooltip" style="
+        display:none;position:absolute;top:4px;pointer-events:none;z-index:10;
+        background:rgba(230,235,255,0.8);color:var(--blue-2);
+        border:1.5px solid var(--blue);
+        border-radius:2px;padding:8px 14px;min-width:140px;
+        font-size:13px;line-height:1.6;
+      "></div>
+    </div>`;
+  }
+
+  document.getElementById('cmpDiffBar').innerHTML = '';
+
+  document.getElementById('cmpTypeChart').innerHTML = `
+    <div class="solo-type-wrap">
+      <div>
+        <div class="solo-type-label">영상 유형 비중</div>
+        <div style="display:flex;align-items:center;gap:20px">
+          ${donutSvg}
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div class="cmp-type-legend-item">
+              <div class="cmp-type-legend-dot" style="background:${COLOR_A};opacity:0.85"></div>
+              쇼츠 <span class="cmp-type-legend-val">${shorts.toLocaleString()}편</span>
+              <span style="color:var(--ink-4)">(${Math.round(shortsRatio*100)}%)</span>
+            </div>
+            <div class="cmp-type-legend-item">
+              <div class="cmp-type-legend-dot" style="background:var(--paper-3)"></div>
+              일반 <span class="cmp-type-legend-val">${normal.toLocaleString()}편</span>
+              <span style="color:var(--ink-4)">(${Math.round((1-shortsRatio)*100)}%)</span>
+            </div>
+            <div class="cmp-type-legend-item" style="margin-top:4px;border-top:1px dashed var(--line);padding-top:6px">
+              최고 조회수 <span class="cmp-type-legend-val" style="color:var(--blue)">${fmtN(topV)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      ${months.length >= 2 ? `
+      <div style="flex:1;min-width:0;border-left:1px solid var(--line);padding-left:24px">
+        <div class="solo-type-label">월별 ${METRIC_LABEL[mk0]} 추이</div>
+        ${trendSvg}
+      </div>` : ''}
+    </div>`;
+
+  // ── 상위 영상 TOP 5
+  const activeMetrics = metrics.length ? metrics : ['v'];
+  const ML = {v:'조회수', l:'좋아요', c:'댓글수'};
+  window.__cmpVidStore = window.__cmpVidStore || {};
+
+  const mkVidRow = (d, i, ns) => {
+    const thumb = getThumbnail(d.u);
+    const storeKey = ns + '_' + i;
+    window.__cmpVidStore[storeKey] = d;
+    return `
+      <div class="cmp-vid-row" onclick="openModal(window.__cmpVidStore['${storeKey}'])">
+        <div class="cmp-vid-thumb">
+          ${thumb ? `<img src="${thumb}" loading="lazy" alt="" onerror="this.style.display='none'">` : ''}
+          <div class="cmp-vid-thumb-ph" style="${thumb?'display:none':''}">▶</div>
+        </div>
+        <div class="cmp-vid-body">
+          <div class="cmp-vid-rank">${String(i+1).padStart(2,'0')} · ${esc(d.wl||d.yw||'')}</div>
+          <div class="cmp-vid-title">${esc(d.ti||'')}</div>
+          <div class="cmp-vid-stats">
+            <span class="cmp-vid-stat-v">${fmtN(d.v)}</span>
+            <span>▲${fmtN(d.l)}</span>
+            <span>💬${fmtN(d.c)}</span>
+          </div>
+        </div>
+      </div>`;
+  };
+
+  const topSections = activeMetrics.map((mk, si) => {
+    const sorted = [...data].sort((a,b)=>(b[mk]||0)-(a[mk]||0)).slice(0,5);
+    return `
+      <div class="solo-top-wrap">
+        <div class="solo-top-header">
+          <div class="solo-top-title">TOP 5 · ${ML[mk]} 기준</div>
+          <div class="solo-top-tag">${esc(orgName)}</div>
+        </div>
+        ${sorted.map((d,i)=>mkVidRow(d,i,`solo_${mk}_${si}`)).join('')}
+      </div>`;
+  }).join('');
+
+  document.getElementById('cmpChartWrap').innerHTML = '';
+  document.getElementById('cmpTops').innerHTML = topSections;
 }
 
 function renderCmpCards(orgA, orgB, statA, statB, primaryMetric) {
@@ -3560,10 +3955,10 @@ function renderCmpChart(orgA, orgB, dataA, dataB, metrics) {
         </svg>
         <div id="cmpChartTooltip" style="
           display:none;position:absolute;top:8px;pointer-events:none;z-index:10;
-          background:var(--ink-1);color:white;border-radius:2px;
+          background:rgba(230,235,255,0.8);color:var(--blue-2);
+          border:1.5px solid var(--blue);border-radius:2px;
           padding:10px 14px;min-width:180px;
           font-size:13px;line-height:1.6;
-          box-shadow:0 4px 16px rgba(0,0,0,0.18);
         "></div>
       </div>
     </div>`;
@@ -3679,15 +4074,15 @@ function cmpChartHover(e, svg) {
     const vA = sA.data[idx], vB = sB.data[idx];
     const mk = sA.mk;
     rows += `
-      <div style="margin-top:${mi>0?'8px':'0'};padding-top:${mi>0?'8px':'0'};border-top:${mi>0?'1px solid rgba(255,255,255,0.12)':'none'}">
-        <div style="font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:0.01em;text-transform:uppercase;margin-bottom:4px">${ML[mk]}</div>
+      <div style="margin-top:${mi>0?'8px':'0'};padding-top:${mi>0?'8px':'0'};border-top:${mi>0?'1px solid rgba(26,62,255,0.15)':'none'}">
+        <div style="font-size:10px;color:var(--blue-3);letter-spacing:0.01em;text-transform:uppercase;margin-bottom:4px;opacity:0.7">${ML[mk]}</div>
         <div style="display:flex;justify-content:space-between;gap:20px">
           <span style="color:${ttData.colorA};font-weight:700">${ttData.orgA}</span>
-          <span style="font-weight:700">${fmtN(vA)}</span>
+          <span style="font-weight:700;color:var(--ink-1)">${fmtN(vA)}</span>
         </div>
         <div style="display:flex;justify-content:space-between;gap:20px">
           <span style="color:${ttData.colorB};font-weight:700">${ttData.orgB}</span>
-          <span style="font-weight:700">${fmtN(vB)}</span>
+          <span style="font-weight:700;color:var(--ink-1)">${fmtN(vB)}</span>
         </div>
       </div>`;
   });
@@ -3695,7 +4090,7 @@ function cmpChartHover(e, svg) {
   const tip = document.getElementById('cmpChartTooltip');
   if (!tip) return;
   tip.innerHTML = `
-    <div style="font-family:'Pretendard',-apple-system,sans-serif;font-size:11px;color:rgba(255,255,255,0.6);letter-spacing:0.01em;margin-bottom:8px">${month}</div>
+    <div style="font-family:'Pretendard',-apple-system,sans-serif;font-size:11px;color:var(--blue-3);letter-spacing:0.01em;margin-bottom:8px;font-weight:600">${month}</div>
     ${rows}`;
   tip.style.display = 'block';
 
@@ -3714,6 +4109,57 @@ function cmpChartHideTooltip() {
   if (tip) tip.style.display = 'none';
   const line = document.getElementById('cmpHoverLine');
   if (line) line.setAttribute('opacity','0');
+}
+
+// ─── Solo Trend Tooltip ───
+function soloTrendHover(e, svg) {
+  const W = +svg.dataset.w, H = +svg.dataset.h, padX = +svg.dataset.padx, n = +svg.dataset.n;
+  if (n < 2) return;
+
+  let ttData;
+  try { ttData = JSON.parse(svg.dataset.tooltip.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"')); }
+  catch { return; }
+
+  const rect = svg.getBoundingClientRect();
+  const svgX = (e.clientX - rect.left) / rect.width * W;
+  const idx = Math.min(n-1, Math.max(0, Math.round((svgX - padX) / ((W - padX*2) / (n-1)))));
+
+  const maxVal = Math.max(...ttData.vals) || 1;
+  const padY = +svg.dataset.pady;
+  const xPos = (idx/(n-1))*(W-padX*2)+padX;
+  const yPos = H - padY - (ttData.vals[idx]/maxVal)*(H-padY*2);
+
+  // 수직선 + 닷
+  const line = document.getElementById('soloHoverLine');
+  const dot  = document.getElementById('soloHoverDot');
+  if (line) { line.setAttribute('x1', xPos); line.setAttribute('x2', xPos); line.setAttribute('opacity','0.6'); }
+  if (dot)  { dot.setAttribute('cx', xPos); dot.setAttribute('cy', yPos); dot.setAttribute('opacity','1'); }
+
+  // 툴팁
+  const tip = document.getElementById('soloTrendTooltip');
+  if (!tip) return;
+  tip.style.display = 'block';
+  tip.innerHTML = `
+    <div style="font-family:'Pretendard',-apple-system,sans-serif;font-size:10px;color:var(--blue-2);letter-spacing:0.01em;margin-bottom:4px;font-weight:600">${ttData.months[idx]}</div>
+    <div style="font-size:15px;font-weight:700;letter-spacing:-0.02em;color:var(--blue)">${fmtN(ttData.vals[idx])}</div>
+    <div style="font-size:10px;color:var(--blue-2);margin-top:1px">${ttData.label}</div>`;
+
+  // 위치: 오른쪽 절반이면 왼쪽에 표시
+  const canvasRect = tip.parentElement.getBoundingClientRect();
+  const relX = e.clientX - canvasRect.left;
+  const tipW = 160;
+  tip.style.left = relX > canvasRect.width / 2
+    ? Math.max(0, relX - tipW - 12) + 'px'
+    : (relX + 12) + 'px';
+}
+
+function soloTrendHide() {
+  const tip = document.getElementById('soloTrendTooltip');
+  if (tip) tip.style.display = 'none';
+  const line = document.getElementById('soloHoverLine');
+  const dot  = document.getElementById('soloHoverDot');
+  if (line) line.setAttribute('opacity','0');
+  if (dot)  dot.setAttribute('opacity','0');
 }
 
 // export
