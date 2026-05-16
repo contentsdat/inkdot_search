@@ -3610,7 +3610,7 @@ function renderSoloAnalysis(orgName, data, metrics) {
   let trendSvg = '';
   if (months.length >= 2) {
     const W=600, H=90, padX=6, padY=10;
-    const labelH = 18;
+    const labelH = 22; // X축 라벨 영역 — font-size 11 기준 여유
     const n = months.length;
 
     // X좌표 계산 (padX 최소, 라벨은 text-anchor로 처리)
@@ -3635,21 +3635,37 @@ function renderSoloAnalysis(orgName, data, metrics) {
         ${dots}`;
     }).join('');
 
-    // X축 라벨
-    const step = Math.max(1, Math.floor(n/8));
-    const xlabels = months.map((m,i) => {
-      if (i % step !== 0 && i !== n-1) return '';
+    // X축 라벨 — 겹침 방지 포함
+    const step = Math.max(1, Math.floor(n / 8));
+    // step 간격으로 표시할 인덱스 목록 먼저 결정
+    const labelIdxSet = new Set();
+    for (let i = 0; i < n; i += step) labelIdxSet.add(i);
+    // 마지막 인덱스 추가 — 단 바로 앞 라벨과 너무 가까우면(step/2 미만 간격) 앞 라벨 제거
+    const lastI = n - 1;
+    if (!labelIdxSet.has(lastI)) {
+      const prevLabelI = [...labelIdxSet].filter(i => i < lastI).pop();
+      if (prevLabelI !== undefined && lastI - prevLabelI < Math.max(1, Math.ceil(step / 2))) {
+        labelIdxSet.delete(prevLabelI);
+      }
+      labelIdxSet.add(lastI);
+    }
+    // SVG 좌표계(W=600) 기준 font-size: 실제 컨테이너가 좁으므로 비율 보정
+    // viewBox W=600 기준으로 11px → 스케일 무관하게 적절한 크기
+    const xlabels = months.map((m, i) => {
+      if (!labelIdxSet.has(i)) return '';
       const x = xOf(i);
-      const anchor = i === 0 ? 'start' : (i === n-1 ? 'end' : 'middle');
-      return `<text x="${x.toFixed(1)}" y="${H+labelH}" text-anchor="${anchor}" font-family="'Pretendard',-apple-system,sans-serif" font-size="10" fill="var(--ink-4)">${m.slice(2)}</text>`;
+      const anchor = i === 0 ? 'start' : (i === lastI ? 'end' : 'middle');
+      // 첫/마지막은 경계에서 살짝 안으로
+      const xAdj = i === 0 ? Math.max(x, 2) : (i === lastI ? Math.min(x, W - 2) : x);
+      return `<text x="${xAdj.toFixed(1)}" y="${H + labelH - 2}" text-anchor="${anchor}" font-family="'Pretendard',-apple-system,sans-serif" font-size="9" fill="var(--ink-4)">${m.slice(2)}</text>`;
     }).join('');
 
-    // 범례 (지표 2개 이상일 때만)
+    // 범례 (지표 2개 이상일 때만) — solo-type-label 스타일과 통일
     const legendHtml = activeMetricKeys.length > 1
-      ? `<div style="display:flex;gap:14px;margin-bottom:6px;flex-wrap:wrap">
+      ? `<div style="display:flex;gap:16px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
           ${activeMetricKeys.map(mk => `
-            <div style="display:flex;align-items:center;gap:5px;font-family:'Pretendard',-apple-system,sans-serif;font-size:10px;color:var(--ink-3)">
-              <div style="width:20px;height:2px;background:${METRIC_COLORS[mk]||COLOR_A};border-radius:1px"></div>
+            <div style="display:flex;align-items:center;gap:6px;font-family:'Pretendard',-apple-system,sans-serif;font-size:10px;color:var(--ink-3);letter-spacing:0.02em;text-transform:uppercase">
+              <div style="width:18px;height:2px;background:${METRIC_COLORS[mk]||COLOR_A};border-radius:1px;flex-shrink:0"></div>
               ${METRIC_LABEL[mk]||mk}
             </div>`).join('')}
         </div>`
@@ -3711,7 +3727,7 @@ function renderSoloAnalysis(orgName, data, metrics) {
       </div>
       ${months.length >= 2 ? `
       <div style="flex:1;min-width:0;border-left:1px solid var(--line);padding-left:24px">
-        <div class="solo-type-label">월별 ${activeMetricKeys.map(mk => METRIC_LABEL[mk]).join(' · ')} 추이</div>
+        <div class="solo-type-label" style="margin-bottom:${activeMetricKeys.length > 1 ? 2 : 10}px">월별 ${activeMetricKeys.map(mk => METRIC_LABEL[mk]).join(' · ')} 추이</div>
         ${trendSvg}
       </div>` : ''}
     </div>`;
