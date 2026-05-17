@@ -2305,6 +2305,82 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
   .mode-tabs { width: 100%; }
   .mode-tab { flex: 1; justify-content: center; }
 }
+
+/* ──────────────────────────────────────── SUBSCRIBER CHART */
+.cmp-subscriber-wrap {
+  background: white;
+  border: 1.5px solid var(--ink-1);
+  margin-bottom: 24px;
+  padding: 20px 20px 16px;
+}
+.cmp-subscriber-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.cmp-subscriber-title {
+  font-size: 15px; font-weight: 700; letter-spacing: -0.02em;
+  display: flex; align-items: center; gap: 8px;
+}
+.cmp-subscriber-badge {
+  display: inline-flex; align-items: center;
+  background: var(--paper-2); border: 1px solid var(--line-2);
+  padding: 2px 8px;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+  color: var(--ink-3);
+}
+.cmp-subscriber-note {
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 10.5px; color: var(--ink-4); letter-spacing: 0.01em;
+}
+.cmp-subscriber-canvas {
+  width: 100%; position: relative; overflow: visible;
+}
+.cmp-subscriber-canvas svg { display: block; width: 100%; }
+.cmp-subscriber-stat-row {
+  display: flex; gap: 24px; margin-top: 14px;
+  padding-top: 12px; border-top: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.cmp-subscriber-stat {
+  display: flex; flex-direction: column; gap: 3px;
+}
+.cmp-subscriber-stat .lbl {
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 10px; color: var(--ink-4);
+  letter-spacing: 0.01em; text-transform: uppercase;
+}
+.cmp-subscriber-stat .val {
+  font-size: 20px; font-weight: 700;
+  letter-spacing: -0.025em; font-feature-settings: 'tnum'; line-height: 1;
+}
+.cmp-subscriber-nodata {
+  padding: 36px 24px; text-align: center;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 12px; color: var(--ink-4); letter-spacing: 0.02em;
+}
+/* 구독자 버튼 — 지표 버튼 그룹과 분리된 독립 버튼 */
+.cmp-sub-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: transparent;
+  border: 1.5px solid var(--line-2);
+  padding: 0 14px;
+  height: 40px;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.01em; text-transform: uppercase;
+  color: var(--ink-3);
+  cursor: pointer; transition: var(--t);
+  white-space: nowrap;
+}
+.cmp-sub-btn:hover { border-color: var(--ink-3); color: var(--ink-1); }
+.cmp-sub-btn.on {
+  background: var(--ink-1); border-color: var(--ink-1); color: white;
+}
+.cmp-sub-btn .sub-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor; opacity: 0.6; flex-shrink: 0;
+}
 </style>
 </head>
 <body>
@@ -2551,10 +2627,15 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
         </div>
         <div class="cc-field">
           <span class="cc-label" id="cmpMetricLabel">지표 <span style="color:var(--ink-4)">(복수 선택)</span></span>
-          <div class="cmp-metric-btns" id="cmpMetricBtns">
-            <button class="cmp-metric-btn on" data-m="v">조회수</button>
-            <button class="cmp-metric-btn" data-m="l">좋아요</button>
-            <button class="cmp-metric-btn" data-m="c">댓글</button>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <div class="cmp-metric-btns" id="cmpMetricBtns">
+              <button class="cmp-metric-btn on" data-m="v">조회수</button>
+              <button class="cmp-metric-btn" data-m="l">좋아요</button>
+              <button class="cmp-metric-btn" data-m="c">댓글</button>
+            </div>
+            <button class="cmp-sub-btn" id="cmpSubBtn" onclick="toggleSubscriberChart()" title="구독자 추이 그래프">
+              <span class="sub-dot"></span>구독자
+            </button>
           </div>
         </div>
         <div class="cc-field">
@@ -2584,6 +2665,7 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
       <div id="cmpDiffBar"></div>
       <div id="cmpTypeChart"></div>
       <div id="cmpChartWrap"></div>
+      <div id="cmpSubscriberWrap"></div>
       <div id="cmpTops"></div>
     </div>
 
@@ -2676,6 +2758,8 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
 <script>
 // ─── State ───
 let DB = null;
+let SUBSCRIBER_DB = null;   // { "기관명": { "구분": "중앙", "data": {"2026-01": 412000, ...} } }
+let cmpShowSubscriber = false; // 구독자 그래프 표시 여부
 let filtered = [];
 let currentKeyword = '';
 let currentSort = 'views';
@@ -2700,6 +2784,7 @@ function switchMode(mode) {
   // Compare 탭 진입 시 결과 초기화
   if (!isSearch) {
     document.getElementById('cmpResult').classList.remove('active');
+    document.getElementById('cmpSubscriberWrap').innerHTML = '';
   }
 }
 
@@ -2779,6 +2864,19 @@ async function loadFromUrl() {
     if (!res.ok) { openDbModal(); return; }
     initApp(await res.json());
   } catch (e) { openDbModal(); }
+})();
+
+// ─── Subscriber auto-fetch ───
+(async () => {
+  // GitHub Pages 기준 subscriber.json 위치
+  const SUBSCRIBER_URL = 'https://contentsdat.github.io/inkdot_search/subscriber.json';
+  try {
+    const res = await fetch(SUBSCRIBER_URL);
+    if (!res.ok) return;
+    SUBSCRIBER_DB = await res.json();
+  } catch (e) {
+    // 로드 실패 시 조용히 무시 (버튼은 표시하되 no-data 상태)
+  }
 })();
 
 // ─── Data normalization ───
@@ -3397,6 +3495,159 @@ const COLOR_B_HEX = '#c84b1a';
 const METRIC_LABEL = {v:'조회수', l:'좋아요', c:'댓글수'};
 const METRIC_COLOR = {v:'#1a3eff', l:'#059669', c:'#d97706'};
 
+// ─── 구독자 버튼 토글 ───
+function toggleSubscriberChart() {
+  cmpShowSubscriber = !cmpShowSubscriber;
+  const btn = document.getElementById('cmpSubBtn');
+  btn.classList.toggle('on', cmpShowSubscriber);
+  // 이미 결과가 표시 중이면 즉시 갱신
+  if (document.getElementById('cmpResult').classList.contains('active')) {
+    const orgA = document.getElementById('cmpOrgA').value;
+    const orgB = cmpOrgBVisible ? document.getElementById('cmpOrgB').value : '';
+    renderSubscriberChart(orgA, orgB);
+  }
+}
+
+// ─── 구독자 그래프 렌더 ───
+function renderSubscriberChart(orgA, orgB) {
+  const wrap = document.getElementById('cmpSubscriberWrap');
+  if (!cmpShowSubscriber) { wrap.innerHTML = ''; return; }
+
+  const hasA = orgA && SUBSCRIBER_DB && SUBSCRIBER_DB[orgA];
+  const hasB = orgB && SUBSCRIBER_DB && SUBSCRIBER_DB[orgB];
+
+  if (!SUBSCRIBER_DB || (!hasA && !hasB)) {
+    wrap.innerHTML = `
+      <div class="cmp-subscriber-wrap">
+        <div class="cmp-subscriber-head">
+          <div class="cmp-subscriber-title">구독자 추이 <span class="cmp-subscriber-badge">SUBSCRIBER</span></div>
+        </div>
+        <div class="cmp-subscriber-nodata">
+          ${!SUBSCRIBER_DB
+            ? 'subscriber.json을 불러오는 중이거나 데이터가 없습니다.'
+            : `<strong>${esc(orgA||orgB)}</strong>의 구독자 데이터가 없습니다.`
+          }
+        </div>
+      </div>`;
+    return;
+  }
+
+  // 월 목록 합집합
+  const allMonths = [...new Set([
+    ...(hasA ? Object.keys(SUBSCRIBER_DB[orgA].data) : []),
+    ...(hasB ? Object.keys(SUBSCRIBER_DB[orgB].data) : []),
+  ])].sort();
+
+  if (allMonths.length < 2) {
+    wrap.innerHTML = `<div class="cmp-subscriber-wrap"><div class="cmp-subscriber-nodata">구독자 데이터가 부족합니다.</div></div>`;
+    return;
+  }
+
+  const valsA = hasA ? allMonths.map(m => SUBSCRIBER_DB[orgA].data[m] || null) : null;
+  const valsB = hasB ? allMonths.map(m => SUBSCRIBER_DB[orgB].data[m] || null) : null;
+
+  // Y 스케일
+  const allVals = [...(valsA||[]), ...(valsB||[])].filter(v => v !== null);
+  const yMax = Math.max(...allVals);
+  const yMin = Math.min(...allVals);
+  const ySpan = yMax - yMin || 1;
+
+  const W = 600, H = 110, padX = 6, padY = 10, labelH = 22;
+  const n = allMonths.length;
+  const xOf = i => n > 1 ? (i / (n - 1)) * (W - padX * 2) + padX : W / 2;
+  const yOf = v => v === null ? null : H - padY - ((v - yMin) / ySpan) * (H - padY * 2);
+
+  function mkPath(vals, color, dash) {
+    if (!vals) return '';
+    // 연속 세그먼트만 연결 (null 있으면 끊김)
+    let path = '';
+    let seg = [];
+    for (let i = 0; i < n; i++) {
+      const y = yOf(vals[i]);
+      if (y === null) {
+        if (seg.length > 1) path += seg.map((p,j)=>j===0?`M${p[0].toFixed(1)},${p[1].toFixed(1)}`:`L${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ') + ' ';
+        seg = [];
+      } else {
+        seg.push([xOf(i), y]);
+      }
+    }
+    if (seg.length > 1) path += seg.map((p,j)=>j===0?`M${p[0].toFixed(1)},${p[1].toFixed(1)}`:`L${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+    if (!path) return '';
+    const dashAttr = dash ? `stroke-dasharray="${dash}"` : '';
+    const dotsHtml = vals.map((v,i) => v===null?'': `<circle cx="${xOf(i).toFixed(1)}" cy="${yOf(v).toFixed(1)}" r="3" fill="${color}" opacity="0.9"/>`).join('');
+    return `<path d="${path}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" ${dashAttr}/>
+            <path d="${path} L${xOf(n-1).toFixed(1)},${H} L${xOf(0).toFixed(1)},${H} Z" fill="${color}" opacity="0.06"/>
+            ${dotsHtml}`;
+  }
+
+  // X축 라벨
+  const step = Math.max(1, Math.floor(n / 8));
+  const xlabels = allMonths.map((m, i) => {
+    if (i % step !== 0 && i !== n - 1) return '';
+    const anchor = i === 0 ? 'start' : (i === n - 1 ? 'end' : 'middle');
+    return `<text x="${xOf(i).toFixed(1)}" y="${H + labelH - 2}" text-anchor="${anchor}" font-family="'Pretendard',-apple-system,sans-serif" font-size="9" fill="var(--ink-4)">${m.slice(2)}</text>`;
+  }).join('');
+
+  // 최신 구독자 수
+  const latestA = hasA ? (valsA.filter(v=>v!==null).slice(-1)[0] || 0) : null;
+  const latestB = hasB ? (valsB.filter(v=>v!==null).slice(-1)[0] || 0) : null;
+  const growthA = hasA && valsA.filter(v=>v!==null).length >= 2
+    ? (() => { const nz = valsA.filter(v=>v!==null); return nz[nz.length-1] - nz[0]; })() : null;
+  const growthB = hasB && valsB.filter(v=>v!==null).length >= 2
+    ? (() => { const nz = valsB.filter(v=>v!==null); return nz[nz.length-1] - nz[0]; })() : null;
+
+  const statItems = [];
+  if (hasA && latestA !== null) {
+    statItems.push(`<div class="cmp-subscriber-stat">
+      <span class="lbl" style="color:${COLOR_A}">${esc(orgA)}</span>
+      <span class="val" style="color:${COLOR_A}">${fmtN(latestA)}</span>
+      ${growthA !== null ? `<span style="font-family:'Pretendard',-apple-system,sans-serif;font-size:10px;color:var(--ink-4)">${growthA>=0?'+':''}${fmtN(growthA)} (기간 중)</span>` : ''}
+    </div>`);
+  }
+  if (hasB && latestB !== null) {
+    statItems.push(`<div class="cmp-subscriber-stat">
+      <span class="lbl" style="color:${COLOR_B_HEX}">${esc(orgB)}</span>
+      <span class="val" style="color:${COLOR_B_HEX}">${fmtN(latestB)}</span>
+      ${growthB !== null ? `<span style="font-family:'Pretendard',-apple-system,sans-serif;font-size:10px;color:var(--ink-4)">${growthB>=0?'+':''}${fmtN(growthB)} (기간 중)</span>` : ''}
+    </div>`);
+  }
+
+  // 범례
+  const legendHtml = [
+    hasA ? `<span style="display:inline-flex;align-items:center;gap:5px">
+      <span style="width:18px;height:2.5px;background:${COLOR_A};border-radius:2px;display:inline-block"></span>
+      <span style="font-size:12px;font-weight:700;color:${COLOR_A}">${esc(orgA)}</span></span>` : '',
+    hasB ? `<span style="display:inline-flex;align-items:center;gap:5px">
+      <span style="width:18px;height:2.5px;background:${COLOR_B_HEX};border-radius:2px;display:inline-block;opacity:0.85"></span>
+      <span style="font-size:12px;font-weight:700;color:${COLOR_B_HEX}">${esc(orgB)}</span></span>` : '',
+  ].filter(Boolean).join('');
+
+  wrap.innerHTML = `
+    <div class="cmp-subscriber-wrap">
+      <div class="cmp-subscriber-head">
+        <div class="cmp-subscriber-title">구독자 추이 <span class="cmp-subscriber-badge">SUBSCRIBER</span></div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          ${legendHtml}
+          <span class="cmp-subscriber-note">월별 구독자 수</span>
+        </div>
+      </div>
+      <div class="cmp-subscriber-canvas">
+        <svg viewBox="0 0 ${W} ${H + labelH}" preserveAspectRatio="none" style="width:100%;height:${H + labelH}px;display:block">
+          ${mkPath(valsA, COLOR_A, '')}
+          ${mkPath(valsB, COLOR_B_HEX, '6 3')}
+          ${xlabels}
+        </svg>
+      </div>
+      <div class="cmp-subscriber-stat-row">
+        ${statItems.join('')}
+        <div class="cmp-subscriber-stat" style="margin-left:auto">
+          <span class="lbl">데이터 기간</span>
+          <span style="font-size:14px;font-weight:600;letter-spacing:-0.02em">${allMonths[0]} ~ ${allMonths[allMonths.length-1]}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
 let cmpOrgBVisible = false;
 
 function toggleOrgB() {
@@ -3472,6 +3723,7 @@ function runCompare() {
   // 단독 분석 모드
   if (!cmpOrgBVisible || !orgB) {
     renderSoloAnalysis(orgA, dataA, metrics);
+    renderSubscriberChart(orgA, '');
     return;
   }
 
@@ -3494,6 +3746,7 @@ function runCompare() {
   renderCmpDiff(orgA, orgB, statA, statB, metrics);
   renderCmpTypeChart(orgA, orgB, statA, statB);
   renderCmpChart(orgA, orgB, dataA, dataB, metrics);
+  renderSubscriberChart(orgA, orgB);
   renderCmpTops(orgA, orgB, dataA, dataB, metrics);
 }
 
