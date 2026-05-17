@@ -771,7 +771,24 @@ button { font-family: inherit; cursor: pointer; }
 }
 .thumb-flag.shorts { background: var(--blue); }
 
-.row-body { display: flex; flex-direction: column; min-width: 0; }
+.row-desc-snippet {
+  font-size: 12px;
+  color: var(--ink-3);
+  line-height: 1.55;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  background: var(--blue-tint);
+  border-left: 2px solid var(--blue);
+  border-radius: 0 4px 4px 0;
+}
+.row-desc-snippet mark {
+  background: var(--blue-tint-2);
+  color: var(--blue-2);
+  font-weight: 600;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
 .row-meta {
   display: flex; align-items: center; gap: 10px;
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -2862,7 +2879,28 @@ async function loadFromUrl() {
   try {
     const res = await fetch('./data.json');
     if (!res.ok) { openDbModal(); return; }
-    initApp(await res.json());
+    const json = await res.json();
+
+    // descriptions.json 병렬 로드 (없어도 정상 동작)
+    try {
+      const descRes = await fetch('./descriptions.json');
+      if (descRes.ok) {
+        const descMap = await descRes.json();
+        const extractId = url => {
+          if (!url) return null;
+          for (const p of [/youtube\.com\/watch\?v=([^&\s]+)/, /youtu\.be\/([^?&\s]+)/, /youtube\.com\/shorts\/([^?&\s]+)/]) {
+            const m = url.match(p); if (m) return m[1];
+          }
+          return null;
+        };
+        json.data = json.data.map(d => {
+          const vid = extractId(d.u);
+          return (vid && descMap[vid]) ? { ...d, d: descMap[vid] } : d;
+        });
+      }
+    } catch (e) { /* descriptions.json 없으면 무시 */ }
+
+    initApp(json);
   } catch (e) { openDbModal(); }
 })();
 
@@ -3099,7 +3137,7 @@ function applyFilters() {
   let res = DB.data;
   if (currentKeyword) {
     const kw = currentKeyword.toLowerCase();
-    res = res.filter(d => d.ti && d.ti.toLowerCase().includes(kw));
+    res = res.filter(d => (d.ti && d.ti.toLowerCase().includes(kw)) || (d.d && d.d.toLowerCase().includes(kw)));
   }
   if (activeOrgType) res = res.filter(d => d.ot === activeOrgType);
   if (activeVidType) res = res.filter(d => d.t === activeVidType || (activeVidType === '쇼츠' && d.t === '쇼츠'));
@@ -3263,6 +3301,15 @@ function renderResult() {
   renderPagination(totalPages);
 }
 
+function getSnippet(text, kw) {
+  if (!text || !kw) return '';
+  const idx = text.toLowerCase().indexOf(kw.toLowerCase());
+  if (idx === -1) return '';
+  const start = Math.max(0, idx - 40);
+  const end = Math.min(text.length, idx + kw.length + 80);
+  return (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
+}
+
 function highlight(text) {
   if (!currentKeyword || !text) return esc(text||'');
   const kw = currentKeyword.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
@@ -3294,6 +3341,9 @@ function renderList(rows) {
           <span>${esc(d.wl||d.yw||'')}</span>
         </div>
         <div class="row-title">${highlight(d.ti)}</div>
+        ${currentKeyword && d.d && d.d.toLowerCase().includes(currentKeyword.toLowerCase()) && !d.ti.toLowerCase().includes(currentKeyword.toLowerCase())
+          ? `<div class="row-desc-snippet">${highlight(getSnippet(d.d, currentKeyword))}</div>`
+          : ''}
         <div class="row-stats">
           <div class="row-stat"><span class="lbl">VIEWS</span><span class="val">${fmtN(d.v)}</span></div>
           <div class="row-stat"><span class="lbl">LIKES</span><span class="val">${fmtN(d.l)}</span></div>
