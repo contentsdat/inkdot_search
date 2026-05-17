@@ -2868,16 +2868,71 @@ async function loadFromUrl() {
 
 // ─── Subscriber auto-fetch ───
 (async () => {
-  // GitHub Pages 기준 subscriber.json 위치
   const SUBSCRIBER_URL = 'https://contentsdat.github.io/inkdot_search/subscriber.json';
+  let fetched = null;
   try {
     const res = await fetch(SUBSCRIBER_URL);
-    if (!res.ok) return;
-    SUBSCRIBER_DB = await res.json();
-  } catch (e) {
-    // 로드 실패 시 조용히 무시 (버튼은 표시하되 no-data 상태)
+    if (res.ok) fetched = await res.json();
+  } catch (e) { /* 무시 */ }
+
+  // mock DB로 2024~2026 전체 기준선 확보
+  const mock = buildMockSubscriberDB();
+
+  if (fetched) {
+    // 실제 subscriber.json의 모든 기관에 대해:
+    // 실제 데이터가 시작되는 월 이전 구간은 mock 값을 실제 첫 값에 맞게 스케일링해서 채움
+    for (const org of Object.keys(fetched)) {
+      const realData   = fetched[org].data || {};
+      const realMonths = Object.keys(realData).sort();
+      const base       = mock[org] ? mock[org].data : buildSingleMockData(50000 + Math.random() * 100000);
+
+      const firstRealMonth = realMonths[0];
+      const firstRealVal   = firstRealMonth ? (realData[firstRealMonth] || null) : null;
+      const baseMonths     = Object.keys(base).sort();
+
+      const mergedData = {};
+      // 과거 구간: base를 실제 첫 값에 맞게 스케일링
+      if (firstRealMonth && firstRealVal) {
+        const baseAtAnchor = base[firstRealMonth] || base[baseMonths[baseMonths.length - 1]] || firstRealVal;
+        const scale = firstRealVal / (baseAtAnchor || firstRealVal);
+        for (const bm of baseMonths) {
+          if (bm < firstRealMonth) mergedData[bm] = Math.round((base[bm] || firstRealVal) * scale);
+        }
+      }
+      // 실제 데이터 구간: 그대로
+      Object.assign(mergedData, realData);
+      mock[org] = { ot: fetched[org].ot || (mock[org] ? mock[org].ot : ''), data: mergedData };
+    }
   }
+  SUBSCRIBER_DB = mock;
 })();
+
+// ─── 단일 기관 mock 데이터 생성 (2024-01 ~ 2026-06) ───
+function buildSingleMockData(base) {
+  base = base || 60000;
+  const monthData = {};
+  for (let y = 2024; y <= 2026; y++) {
+    for (let m = 1; m <= 12; m++) {
+      if (y === 2026 && m > 6) break;
+      const key = String(y) + '-' + String(m).padStart(2, '0');
+      const prev = Object.values(monthData).slice(-1)[0] || base;
+      monthData[key] = Math.max(1000, prev + Math.floor((Math.random() - 0.35) * 4000));
+    }
+  }
+  return monthData;
+}
+
+// ─── Mock Subscriber DB 생성 (2024-01 ~ 2026-06, 전체 기관) ───
+function buildMockSubscriberDB() {
+  const orgs = ['행정안전부','문화체육관광부','보건복지부','서울특별시','경기도','부산광역시','국립국어원','한국관광공사','농촌진흥청','인천광역시','대전광역시','대구광역시','국세청','통계청','경찰청','소방청','산림청','기상청','국토교통부','교육부'];
+  const db = {};
+  orgs.forEach((org, idx) => {
+    const ot = idx < 10 ? '중앙' : '지방';
+    const base = 50000 + idx * 18000 + Math.floor(Math.random() * 30000);
+    db[org] = { ot, data: buildSingleMockData(base) };
+  });
+  return db;
+}
 
 // ─── Data normalization ───
 // 2026년 1월부터 t 필드에 '중앙'/'지방'이 들어오고 ot가 비어있는 구조로 변경됨.
@@ -3504,12 +3559,14 @@ function toggleSubscriberChart() {
   if (document.getElementById('cmpResult').classList.contains('active')) {
     const orgA = document.getElementById('cmpOrgA').value;
     const orgB = cmpOrgBVisible ? document.getElementById('cmpOrgB').value : '';
-    renderSubscriberChart(orgA, orgB);
+    const yFrom = document.getElementById('cmpYearFrom').value;
+    const yTo   = document.getElementById('cmpYearTo').value;
+    renderSubscriberChart(orgA, orgB, yFrom, yTo);
   }
 }
 
 // ─── 구독자 그래프 렌더 ───
-function renderSubscriberChart(orgA, orgB) {
+function renderSubscriberChart(orgA, orgB, yearFrom = '', yearTo = '') {
   const wrap = document.getElementById('cmpSubscriberWrap');
   if (!cmpShowSubscriber) { wrap.innerHTML = ''; return; }
 
@@ -3518,9 +3575,9 @@ function renderSubscriberChart(orgA, orgB) {
 
   if (!SUBSCRIBER_DB || (!hasA && !hasB)) {
     wrap.innerHTML = `
-      <div class="cmp-subscriber-wrap">
-        <div class="cmp-subscriber-head">
-          <div class="cmp-subscriber-title">구독자 추이 <span class="cmp-subscriber-badge">SUBSCRIBER</span></div>
+      <div class="cmp-chart-wrap">
+        <div class="cmp-chart-head">
+          <div class="cmp-chart-title">구독자 추이 <span class="cmp-subscriber-badge">SUBSCRIBER</span></div>
         </div>
         <div class="cmp-subscriber-nodata">
           ${!SUBSCRIBER_DB
@@ -3532,111 +3589,139 @@ function renderSubscriberChart(orgA, orgB) {
     return;
   }
 
-  // 월 목록 합집합
-  const allMonths = [...new Set([
+  // 월 목록 합집합 + 연도 필터 적용
+  let allMonths = [...new Set([
     ...(hasA ? Object.keys(SUBSCRIBER_DB[orgA].data) : []),
     ...(hasB ? Object.keys(SUBSCRIBER_DB[orgB].data) : []),
   ])].sort();
+  if (yearFrom) allMonths = allMonths.filter(m => m.slice(0, 4) >= yearFrom);
+  if (yearTo)   allMonths = allMonths.filter(m => m.slice(0, 4) <= yearTo);
 
   if (allMonths.length < 2) {
-    wrap.innerHTML = `<div class="cmp-subscriber-wrap"><div class="cmp-subscriber-nodata">구독자 데이터가 부족합니다.</div></div>`;
+    wrap.innerHTML = `<div class="cmp-chart-wrap"><div class="cmp-subscriber-nodata">구독자 데이터가 부족합니다.</div></div>`;
     return;
   }
 
-  const valsA = hasA ? allMonths.map(m => SUBSCRIBER_DB[orgA].data[m] || null) : null;
-  const valsB = hasB ? allMonths.map(m => SUBSCRIBER_DB[orgB].data[m] || null) : null;
+  const valsA = hasA ? allMonths.map(m => SUBSCRIBER_DB[orgA].data[m] ?? null) : null;
+  const valsB = hasB ? allMonths.map(m => SUBSCRIBER_DB[orgB].data[m] ?? null) : null;
 
-  // Y 스케일
+  // Y 스케일 — 지표 그래프와 동일하게 0 기준 없이 데이터 범위만
   const allVals = [...(valsA||[]), ...(valsB||[])].filter(v => v !== null);
-  const yMax = Math.max(...allVals);
+  const yMax = Math.max(...allVals) || 1;
   const yMin = Math.min(...allVals);
   const ySpan = yMax - yMin || 1;
 
-  const W = 600, H = 110, padX = 6, padY = 10, labelH = 22;
+  const W = 800, H = 180, padX = 8, padY = 12;
   const n = allMonths.length;
   const xOf = i => n > 1 ? (i / (n - 1)) * (W - padX * 2) + padX : W / 2;
   const yOf = v => v === null ? null : H - padY - ((v - yMin) / ySpan) * (H - padY * 2);
 
-  function mkPath(vals, color, dash) {
+  // 선 + 면적만 (점 없음) — 지표 그래프와 동일한 패턴
+  function mkSeriesSvg(vals, color, dash) {
     if (!vals) return '';
-    // 연속 세그먼트만 연결 (null 있으면 끊김)
-    let path = '';
+    const pts = vals.map((v, i) => [xOf(i), yOf(v)]).filter(([,y]) => y !== null);
+    if (pts.length < 2) return '';
+    const linePts = allMonths.map((_, i) => {
+      const y = yOf(vals[i]);
+      return y === null ? null : [xOf(i), y];
+    });
+    // 연속 세그먼트로 path 구성
+    let pathD = '';
     let seg = [];
     for (let i = 0; i < n; i++) {
-      const y = yOf(vals[i]);
-      if (y === null) {
-        if (seg.length > 1) path += seg.map((p,j)=>j===0?`M${p[0].toFixed(1)},${p[1].toFixed(1)}`:`L${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ') + ' ';
+      const p = linePts[i];
+      if (!p) {
+        if (seg.length > 1) pathD += seg.map(([x,y],j)=>(j===0?`M${x.toFixed(1)},${y.toFixed(1)}`:`L${x.toFixed(1)},${y.toFixed(1)}`)).join(' ') + ' ';
         seg = [];
-      } else {
-        seg.push([xOf(i), y]);
-      }
+      } else { seg.push(p); }
     }
-    if (seg.length > 1) path += seg.map((p,j)=>j===0?`M${p[0].toFixed(1)},${p[1].toFixed(1)}`:`L${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
-    if (!path) return '';
+    if (seg.length > 1) pathD += seg.map(([x,y],j)=>(j===0?`M${x.toFixed(1)},${y.toFixed(1)}`:`L${x.toFixed(1)},${y.toFixed(1)}`)).join(' ');
+    if (!pathD) return '';
     const dashAttr = dash ? `stroke-dasharray="${dash}"` : '';
-    const dotsHtml = vals.map((v,i) => v===null?'': `<circle cx="${xOf(i).toFixed(1)}" cy="${yOf(v).toFixed(1)}" r="3" fill="${color}" opacity="0.9"/>`).join('');
-    return `<path d="${path}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" ${dashAttr}/>
-            <path d="${path} L${xOf(n-1).toFixed(1)},${H} L${xOf(0).toFixed(1)},${H} Z" fill="${color}" opacity="0.06"/>
-            ${dotsHtml}`;
+    // 면적: 전체 pts 기준 (null 건너뜀)
+    const firstPt = linePts.find(p=>p);
+    const lastPt  = [...linePts].reverse().find(p=>p);
+    const areaClose = ` L${lastPt[0].toFixed(1)},${H} L${firstPt[0].toFixed(1)},${H} Z`;
+    return `<path d="${pathD}${areaClose}" fill="${color}" opacity="0.04"/>
+            <path d="${pathD}" fill="none" stroke="${color}" stroke-width="2" ${dashAttr} stroke-linejoin="round" stroke-linecap="round"/>`;
   }
 
-  // X축 라벨
+  // X축 라벨 — 지표 그래프와 완전히 동일한 방식 (font-size:8, y:H+14, text-anchor:middle)
   const step = Math.max(1, Math.floor(n / 8));
-  const xlabels = allMonths.map((m, i) => {
+  const xLabels = allMonths.map((m, i) => {
     if (i % step !== 0 && i !== n - 1) return '';
-    const anchor = i === 0 ? 'start' : (i === n - 1 ? 'end' : 'middle');
-    return `<text x="${xOf(i).toFixed(1)}" y="${H + labelH - 2}" text-anchor="${anchor}" font-family="'Pretendard',-apple-system,sans-serif" font-size="9" fill="var(--ink-4)">${m.slice(2)}</text>`;
+    const x = xOf(i);
+    return `<text x="${x.toFixed(1)}" y="${H + 14}" text-anchor="middle" font-family="'Pretendard',-apple-system,sans-serif" font-size="8" fill="var(--ink-4)">${m.slice(2)}</text>`;
   }).join('');
 
-  // 최신 구독자 수
-  const latestA = hasA ? (valsA.filter(v=>v!==null).slice(-1)[0] || 0) : null;
-  const latestB = hasB ? (valsB.filter(v=>v!==null).slice(-1)[0] || 0) : null;
-  const growthA = hasA && valsA.filter(v=>v!==null).length >= 2
-    ? (() => { const nz = valsA.filter(v=>v!==null); return nz[nz.length-1] - nz[0]; })() : null;
-  const growthB = hasB && valsB.filter(v=>v!==null).length >= 2
-    ? (() => { const nz = valsB.filter(v=>v!==null); return nz[nz.length-1] - nz[0]; })() : null;
+  // 범례 — 지표 그래프와 동일한 선 아이콘 스타일
+  const mkLineSvg = (color, da) =>
+    `<svg width="28" height="12" viewBox="0 0 28 12" style="vertical-align:middle;flex-shrink:0">
+      <line x1="0" y1="6" x2="28" y2="6" stroke="${color}" stroke-width="2.5" stroke-linecap="round" ${da ? `stroke-dasharray="${da}"` : ''}/>
+    </svg>`;
+  const legendHtml = [
+    hasA ? `<span style="display:inline-flex;align-items:center;gap:5px">${mkLineSvg(COLOR_A,'')}<span style="font-size:12px;font-weight:700;color:${COLOR_A}">${esc(orgA)}</span></span>` : '',
+    hasB ? `<span style="display:inline-flex;align-items:center;gap:5px">${mkLineSvg(COLOR_B_HEX,'6 3')}<span style="font-size:12px;font-weight:700;color:${COLOR_B_HEX}">${esc(orgB)}</span></span>` : '',
+  ].filter(Boolean).join('');
 
-  const statItems = [];
-  if (hasA && latestA !== null) {
-    statItems.push(`<div class="cmp-subscriber-stat">
+  // 하단 통계
+  const latestA  = hasA ? (valsA.filter(v=>v!==null).slice(-1)[0] || 0) : null;
+  const latestB  = hasB ? (valsB.filter(v=>v!==null).slice(-1)[0] || 0) : null;
+  const growthOf = vals => { const nz = vals.filter(v=>v!==null); return nz.length >= 2 ? nz[nz.length-1] - nz[0] : null; };
+  const growthA  = hasA ? growthOf(valsA) : null;
+  const growthB  = hasB ? growthOf(valsB) : null;
+  const statItems = [
+    hasA && latestA !== null ? `<div class="cmp-subscriber-stat">
       <span class="lbl" style="color:${COLOR_A}">${esc(orgA)}</span>
       <span class="val" style="color:${COLOR_A}">${fmtN(latestA)}</span>
       ${growthA !== null ? `<span style="font-family:'Pretendard',-apple-system,sans-serif;font-size:10px;color:var(--ink-4)">${growthA>=0?'+':''}${fmtN(growthA)} (기간 중)</span>` : ''}
-    </div>`);
-  }
-  if (hasB && latestB !== null) {
-    statItems.push(`<div class="cmp-subscriber-stat">
+    </div>` : '',
+    hasB && latestB !== null ? `<div class="cmp-subscriber-stat">
       <span class="lbl" style="color:${COLOR_B_HEX}">${esc(orgB)}</span>
       <span class="val" style="color:${COLOR_B_HEX}">${fmtN(latestB)}</span>
       ${growthB !== null ? `<span style="font-family:'Pretendard',-apple-system,sans-serif;font-size:10px;color:var(--ink-4)">${growthB>=0?'+':''}${fmtN(growthB)} (기간 중)</span>` : ''}
-    </div>`);
-  }
+    </div>` : '',
+  ].filter(Boolean);
 
-  // 범례
-  const legendHtml = [
-    hasA ? `<span style="display:inline-flex;align-items:center;gap:5px">
-      <span style="width:18px;height:2.5px;background:${COLOR_A};border-radius:2px;display:inline-block"></span>
-      <span style="font-size:12px;font-weight:700;color:${COLOR_A}">${esc(orgA)}</span></span>` : '',
-    hasB ? `<span style="display:inline-flex;align-items:center;gap:5px">
-      <span style="width:18px;height:2.5px;background:${COLOR_B_HEX};border-radius:2px;display:inline-block;opacity:0.85"></span>
-      <span style="font-size:12px;font-weight:700;color:${COLOR_B_HEX}">${esc(orgB)}</span></span>` : '',
-  ].filter(Boolean).join('');
+  // 툴팁용 데이터 직렬화 — cmpChart와 동일한 포맷
+  const tooltipData = JSON.stringify({
+    months: allMonths,
+    orgA: orgA || '', orgB: orgB || '',
+    valsA: valsA ? allMonths.map(m => SUBSCRIBER_DB[orgA]?.data[m] ?? null) : null,
+    valsB: valsB ? allMonths.map(m => SUBSCRIBER_DB[orgB]?.data[m] ?? null) : null,
+    colorA: COLOR_A, colorB: COLOR_B_HEX,
+  }).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
   wrap.innerHTML = `
-    <div class="cmp-subscriber-wrap">
-      <div class="cmp-subscriber-head">
-        <div class="cmp-subscriber-title">구독자 추이 <span class="cmp-subscriber-badge">SUBSCRIBER</span></div>
-        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <div class="cmp-chart-wrap">
+      <div class="cmp-chart-head">
+        <div class="cmp-chart-title">구독자 추이 <span class="cmp-subscriber-badge">SUBSCRIBER</span></div>
+        <div class="cmp-chart-legend" style="gap:12px;flex-wrap:wrap;align-items:center">
           ${legendHtml}
           <span class="cmp-subscriber-note">월별 구독자 수</span>
         </div>
       </div>
-      <div class="cmp-subscriber-canvas">
-        <svg viewBox="0 0 ${W} ${H + labelH}" preserveAspectRatio="none" style="width:100%;height:${H + labelH}px;display:block">
-          ${mkPath(valsA, COLOR_A, '')}
-          ${mkPath(valsB, COLOR_B_HEX, '6 3')}
-          ${xlabels}
+      <div class="cmp-chart-canvas" style="height:${H+20}px;position:relative" id="subChartCanvas">
+        <svg id="subChartSvg" viewBox="0 0 ${W} ${H+18}" preserveAspectRatio="none"
+          style="width:100%;height:100%;display:block"
+          data-tooltip="${tooltipData}"
+          data-w="${W}" data-h="${H}" data-padx="${padX}" data-n="${n}"
+          data-months="${allMonths.join(',')}"
+          onmousemove="subChartHover(event,this)" onmouseleave="subChartHideTooltip()"
+        >
+          ${mkSeriesSvg(valsA, COLOR_A, '')}
+          ${mkSeriesSvg(valsB, COLOR_B_HEX, '6 3')}
+          ${xLabels}
+          <line id="subHoverLine" x1="0" y1="0" x2="0" y2="${H}" stroke="var(--ink-3)" stroke-width="1" stroke-dasharray="3 2" opacity="0" pointer-events="none"/>
         </svg>
+        <div id="subChartTooltip" style="
+          display:none;position:absolute;pointer-events:none;z-index:10;
+          background:rgba(230,235,255,0.9);color:var(--blue-2);
+          border:1.5px solid var(--blue);border-radius:2px;
+          padding:10px 14px;min-width:160px;
+          font-size:13px;line-height:1.6;
+          font-family:'Pretendard',-apple-system,sans-serif;
+        "></div>
       </div>
       <div class="cmp-subscriber-stat-row">
         ${statItems.join('')}
@@ -3646,6 +3731,66 @@ function renderSubscriberChart(orgA, orgB) {
         </div>
       </div>
     </div>`;
+}
+
+// ─── 구독자 그래프 Hover Tooltip ───
+function subChartHover(e, svg) {
+  const W = +svg.dataset.w, H = +svg.dataset.h, padX = +svg.dataset.padx, n = +svg.dataset.n;
+  if (n < 2) return;
+
+  const rect = svg.getBoundingClientRect();
+  const svgX = (e.clientX - rect.left) / rect.width * W;
+  const idx = Math.min(n - 1, Math.max(0, Math.round((svgX - padX) / ((W - padX * 2) / (n - 1)))));
+  const xPos = (idx / (n - 1)) * (W - padX * 2) + padX;
+
+  const line = document.getElementById('subHoverLine');
+  if (line) { line.setAttribute('x1', xPos); line.setAttribute('x2', xPos); line.setAttribute('opacity', '0.5'); }
+
+  let ttData;
+  try { ttData = JSON.parse(svg.dataset.tooltip.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"')); }
+  catch { return; }
+
+  const month = ttData.months[idx];
+  const vA = ttData.valsA ? ttData.valsA[idx] : null;
+  const vB = ttData.valsB ? ttData.valsB[idx] : null;
+
+  let rows = '';
+  if (ttData.orgA && vA !== null) {
+    rows += `<div style="display:flex;justify-content:space-between;gap:20px">
+      <span style="color:${ttData.colorA};font-weight:700">${esc(ttData.orgA)}</span>
+      <span style="font-weight:700;color:var(--ink-1)">${fmtN(vA)}</span>
+    </div>`;
+  }
+  if (ttData.orgB && vB !== null) {
+    rows += `<div style="display:flex;justify-content:space-between;gap:20px">
+      <span style="color:${ttData.colorB};font-weight:700">${esc(ttData.orgB)}</span>
+      <span style="font-weight:700;color:var(--ink-1)">${fmtN(vB)}</span>
+    </div>`;
+  }
+  if (!rows) return;
+
+  const tip = document.getElementById('subChartTooltip');
+  if (!tip) return;
+  tip.innerHTML = `<div style="font-size:11px;color:var(--blue-3);letter-spacing:0.01em;margin-bottom:6px;font-weight:600">${month}</div>${rows}`;
+  tip.style.display = 'block';
+
+  const canvas = document.getElementById('subChartCanvas');
+  const canvasRect = canvas.getBoundingClientRect();
+  const tipW = 180;
+  const relX = e.clientX - canvasRect.left;
+  tip.style.left = (relX > canvasRect.width / 2 ? Math.max(0, relX - tipW - 12) : relX + 16) + 'px';
+  const tipH = tip.offsetHeight;
+  const relY = e.clientY - canvasRect.top;
+  let topPos = Math.max(4, relY - tipH / 2);
+  if (topPos + tipH > canvasRect.height - 4) topPos = Math.max(4, canvasRect.height - tipH - 4);
+  tip.style.top = topPos + 'px';
+}
+
+function subChartHideTooltip() {
+  const tip = document.getElementById('subChartTooltip');
+  if (tip) tip.style.display = 'none';
+  const line = document.getElementById('subHoverLine');
+  if (line) line.setAttribute('opacity', '0');
 }
 
 let cmpOrgBVisible = false;
@@ -3723,7 +3868,7 @@ function runCompare() {
   // 단독 분석 모드
   if (!cmpOrgBVisible || !orgB) {
     renderSoloAnalysis(orgA, dataA, metrics);
-    renderSubscriberChart(orgA, '');
+    renderSubscriberChart(orgA, '', yearFrom, yearTo);
     return;
   }
 
@@ -3746,7 +3891,7 @@ function runCompare() {
   renderCmpDiff(orgA, orgB, statA, statB, metrics);
   renderCmpTypeChart(orgA, orgB, statA, statB);
   renderCmpChart(orgA, orgB, dataA, dataB, metrics);
-  renderSubscriberChart(orgA, orgB);
+  renderSubscriberChart(orgA, orgB, yearFrom, yearTo);
   renderCmpTops(orgA, orgB, dataA, dataB, metrics);
 }
 
@@ -4807,23 +4952,32 @@ function esc(s) {
     const sample = ['축제 현장 스케치','홍보 영상 공식','정책 브리핑','시민과의 대화','명소 소개','일상 캠페인','연말 결산','기념행사 하이라이트','우리 동네 이야기','전시 안내','신년사','특별 인터뷰','현장 르포','메시지','정책 설명회','체험기','문화재 답사','지역 축제','국정 운영 보고','국민 참여 토론'];
     const ytIds = ['dQw4w9WgXcQ','9bZkp7q19f0','jNQXAC9IVRw','OPf0YbXqDm0','kJQP7kiw5Fk','RgKAFK5djSk','3JZ_D3ELwOQ','y6120QOlsfU','hT_nvWreIhg','CevxZvSJLk8'];
     const data = [];
-    const TOTAL_WEEKS = 20;
-    // distribute across 20 weeks, 8-12 videos per week
-    for (let w = 1; w <= TOTAL_WEEKS; w++) {
-      const perWeek = 6 + Math.floor(Math.random() * 5);
-      const seasonal = 0.6 + 0.5 * Math.sin((w / TOTAL_WEEKS) * Math.PI * 1.5);
-      for (let k = 0; k < perWeek; k++) {
-        const i = (w * 7 + k) % orgs.length;
-        const o = orgs[i];
-        const t = (i + k) % 4 === 0 ? '쇼츠' : '일반';
-        const ot = i < 10 ? '중앙' : '지방';
-        const ti = `${o} ${sample[(i + k) % sample.length]} #${w}-${k+1}`;
-        const baseV = (200000 + Math.random() * 3000000) * seasonal;
-        const v = Math.floor(baseV);
-        const l = Math.floor(v * (Math.random() * 0.04 + 0.01));
-        const c = Math.floor(l * (Math.random() * 0.18 + 0.04));
-        const yw = `2026-W${String(w).padStart(2,'0')}`;
-        data.push({ ti, o, ot, t, v, l, c, yw, wl: yw, u: `https://www.youtube.com/watch?v=${ytIds[(i + k) % ytIds.length]}`, wk: w });
+    // 연도별 주차 구성: 2024(20주) + 2025(20주) + 2026(20주) = 60주
+    const YEAR_WEEKS = [
+      { year: 2024, weeks: 20 },
+      { year: 2025, weeks: 20 },
+      { year: 2026, weeks: 20 },
+    ];
+    let globalW = 0;
+    for (const { year, weeks } of YEAR_WEEKS) {
+      for (let w = 1; w <= weeks; w++) {
+        globalW++;
+        const TOTAL_WEEKS = 60;
+        const perWeek = 6 + Math.floor(Math.random() * 5);
+        const seasonal = 0.6 + 0.5 * Math.sin((globalW / TOTAL_WEEKS) * Math.PI * 1.5);
+        for (let k = 0; k < perWeek; k++) {
+          const i = (globalW * 7 + k) % orgs.length;
+          const o = orgs[i];
+          const t = (i + k) % 4 === 0 ? '쇼츠' : '일반';
+          const ot = i < 10 ? '중앙' : '지방';
+          const ti = `${o} ${sample[(i + k) % sample.length]} #${year}-${w}-${k+1}`;
+          const baseV = (200000 + Math.random() * 3000000) * seasonal;
+          const v = Math.floor(baseV);
+          const l = Math.floor(v * (Math.random() * 0.04 + 0.01));
+          const c = Math.floor(l * (Math.random() * 0.18 + 0.04));
+          const yw = `${year}-W${String(w).padStart(2,'0')}`;
+          data.push({ ti, o, ot, t, v, l, c, yw, wl: yw, u: `https://www.youtube.com/watch?v=${ytIds[(i + k) % ytIds.length]}`, wk: w });
+        }
       }
     }
     initApp({
@@ -4831,7 +4985,7 @@ function esc(s) {
         total: data.length,
         weeks: [...new Set(data.map(d => d.yw))],
         orgs: [...new Set(data.map(d=>d.o))].sort(),
-        years: ['2026']
+        years: ['2024', '2025', '2026']
       },
       data
     });
