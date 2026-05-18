@@ -3341,7 +3341,7 @@ function renderList(rows) {
           <span>${esc(d.wl||d.yw||'')}</span>
         </div>
         <div class="row-title">${highlight(d.ti)}</div>
-        ${currentKeyword && d.d && d.d.toLowerCase().includes(currentKeyword.toLowerCase()) && !d.ti.toLowerCase().includes(currentKeyword.toLowerCase())
+        ${currentKeyword && d.d && d.d.toLowerCase().includes(currentKeyword.toLowerCase())
           ? `<div class="row-desc-snippet">${highlight(getSnippet(d.d, currentKeyword))}</div>`
           : ''}
         <div class="row-stats">
