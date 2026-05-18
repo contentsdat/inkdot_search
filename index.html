@@ -269,6 +269,34 @@ button { font-family: inherit; cursor: pointer; }
 }
 .search-big button:hover { background: var(--blue-2); }
 .search-big button svg { width: 14px; height: 14px; }
+.search-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.search-row .search-big {
+  flex: 1;
+  margin-bottom: 0;
+}
+.search-clear-btn {
+  display: none;
+  align-items: center; justify-content: center;
+  flex-shrink: 0;
+  align-self: stretch;
+  padding: 0 18px;
+  background: white;
+  border: 1.5px solid var(--ink-1);
+  box-shadow: 6px 6px 0 var(--ink-1);
+  color: var(--ink-2);
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  cursor: pointer; transition: var(--t);
+}
+.search-clear-btn:hover { background: var(--ink-1); color: white; box-shadow: 6px 6px 0 var(--blue); border-color: var(--ink-1); }
+.search-clear-btn.visible { display: flex; }
 
 .hero-foot {
   display: flex; align-items: center; gap: 14px;
@@ -1712,6 +1740,20 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
   flex-shrink: 0;
 }
 .compare-run-btn:hover { background: var(--blue); }
+.compare-reset-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; color: var(--ink-3);
+  border: 1.5px solid var(--line-2);
+  padding: 0 14px;
+  height: 40px;
+  font: inherit; font-size: 12px; font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: var(--t);
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.compare-reset-btn:hover { border-color: var(--ink-2); color: var(--ink-1); }
 
 /* ── 새 Compare 컨트롤 레이아웃 ── */
 .cmp-org-row {
@@ -2154,6 +2196,7 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
   .search-big button { padding: 0 16px; font-size: 13px; }
   .search-big input { font-size: 15px; padding: 16px 12px; }
   .search-big input::placeholder { font-size: 16px; }
+  .search-clear-btn { padding: 0 12px; font-size: 11px; }
 }
 
 /* ④ 리스트 행 — 모바일 썸네일/텍스트 최적화 */
@@ -2545,13 +2588,16 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
   <!-- SEARCH PANEL WRAPPER START -->
   <div id="searchPanel">
 
+  <div class="search-row">
   <div class="search-big">
     <span class="label">SEARCH</span>
-    <input type="text" id="searchInput" placeholder="키워드를 입력하세요" autocomplete="off">
+    <input type="text" id="searchInput" placeholder="키워드를 입력하세요" autocomplete="off" oninput="toggleSearchClear()">
     <button onclick="doSearch()">
       검색
       <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10M8 3l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
+  </div>
+  <button class="search-clear-btn" id="searchClearBtn" onclick="clearSearch()" title="검색어 초기화">✕ 초기화</button>
   </div>
 
   <!-- INLINE FILTERS -->
@@ -2664,6 +2710,7 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
               <option value="쇼츠">쇼츠</option>
             </select>
             <button class="compare-run-btn" id="cmpRunBtn" onclick="runCompare()">분석 →</button>
+            <button class="compare-reset-btn" onclick="resetCompare()" title="비교 항목 초기화">초기화</button>
           </div>
         </div>
       </div>
@@ -2977,7 +3024,7 @@ function initApp(json) {
 
   currentKeyword = '';
   currentPage = 1;
-  document.getElementById('searchInput').value = '';
+  document.getElementById('searchInput').value = ''; if(typeof toggleSearchClear==='function') toggleSearchClear();
   activeOrgType = ''; activeVidType = '';
 
   // populate compare dropdowns
@@ -3095,7 +3142,7 @@ function applyPreset(id) {
   document.querySelectorAll('#vidTypeSeg button').forEach((x,i) => x.classList.toggle('on', i === 0));
   document.getElementById('orgFilter').value = '';
   document.getElementById('yearFilter').value = '';
-  document.getElementById('searchInput').value = '';
+  document.getElementById('searchInput').value = ''; if(typeof toggleSearchClear==='function') toggleSearchClear();
   currentKeyword = ''; presetExtras = {};
 
   const opts = p.apply();
@@ -3120,12 +3167,33 @@ function setKeyword(w) {
   document.getElementById('searchInput').value = w;
   doSearch();
 }
+function toggleSearchClear() {
+  const val = document.getElementById('searchInput').value;
+  document.getElementById('searchClearBtn').classList.toggle('visible', val.length > 0);
+}
+function clearSearch() {
+  document.getElementById('searchInput').value = ''; if(typeof toggleSearchClear==='function') toggleSearchClear();
+  document.getElementById('searchClearBtn').classList.remove('visible');
+  currentKeyword = '';
+  currentPage = 1;
+  applyFilters();
+}
+function resetCompare() {
+  document.getElementById('cmpOrgA').value = '';
+  document.getElementById('cmpOrgB').value = '';
+  document.getElementById('cmpYearFrom').value = '';
+  document.getElementById('cmpYearTo').value = '';
+  document.getElementById('cmpVidType').value = '';
+  document.querySelectorAll('#cmpMetricBtns .cmp-metric-btn').forEach((b, i) => b.classList.toggle('on', i === 0));
+  if (cmpOrgBVisible) toggleOrgB();
+  document.getElementById('cmpResult').innerHTML = '';
+}
 function doSearch() {
   currentKeyword = document.getElementById('searchInput').value.trim();
   currentPage = 1;
   applyFilters();
 }
-document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); toggleSearchClear(); });
 
 // filter
 function applyFilters() {
@@ -3171,7 +3239,7 @@ function resetFilters() {
   document.querySelectorAll('#vidTypeSeg button').forEach((x,i) => x.classList.toggle('on', i === 0));
   document.getElementById('orgFilter').value = '';
   document.getElementById('yearFilter').value = '';
-  document.getElementById('searchInput').value = '';
+  document.getElementById('searchInput').value = ''; if(typeof toggleSearchClear==='function') toggleSearchClear();
   currentKeyword = ''; currentPage = 1;
   applyFilters();
 }
