@@ -3452,18 +3452,34 @@ async function initAuth() {
 async function loadUserPlan(user) {
   let plan = 'free';
   try {
-    // Supabase 연결 전(플레이스홀더 상태)이면 에러가 나므로 무시
     if (SUPABASE_URL.includes('YOUR_PROJECT_ID')) {
-      // 플레이스홀더: 로컬 mock — 실제 연동 전까지 free로 처리
+      // 플레이스홀더: 실제 연동 전까지 free로 처리
     } else {
       const { data, error } = await _supabase
         .from('user_plans')
         .select('plan')
         .eq('user_id', user.id)
         .single();
-      if (!error && data?.plan) plan = data.plan;
+
+      if (error) {
+        // row 없음(PGRST116) → user_plans에 자동 등록
+        if (error.code === 'PGRST116') {
+          await _supabase.from('user_plans').upsert({
+            user_id: user.id,
+            email: user.email,
+            plan: 'free',
+            updated_at: new Date().toISOString()
+          });
+        } else {
+          console.warn('[inkdot] loadUserPlan error:', error.message, error.code);
+        }
+      } else if (data?.plan) {
+        plan = data.plan;
+      }
     }
-  } catch (e) { /* 연결 실패 시 free 유지 */ }
+  } catch (e) {
+    console.warn('[inkdot] loadUserPlan exception:', e.message);
+  }
 
   updateAuthUI(user, plan);
 }
