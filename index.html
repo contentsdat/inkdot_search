@@ -4233,14 +4233,14 @@ function buildKeywordChips() {
 
 // presets
 const PRESETS = [
-  { id: 'topweek',   name: '이번 주 인기',   sub: 'TOP THIS WEEK',   apply: () => ({ year: latestYear(), latestWeekOnly: true, sort: 'views' }) },
-  { id: 'topmonth',  name: '이달 TOP 영상',  sub: 'TOP THIS MONTH',  apply: () => ({ year: latestYear(), recentWeeks: 4, sort: 'views' }) },
-  { id: 'topviews',  name: '조회수 TOP',     sub: 'MOST VIEWED',     apply: () => ({ sort: 'views' }) },
-  { id: 'toplikes',  name: '좋아요 TOP',     sub: 'MOST LIKED',      apply: () => ({ sort: 'likes' }) },
-  { id: 'comm',      name: '댓글 많은 영상', sub: 'MOST DISCUSSED',  apply: () => ({ recentWeeks: 13, sort: 'comments' }) },
-  { id: 'shorts',    name: '쇼츠 베스트',    sub: 'BEST SHORTS',     apply: () => ({ vidType: '쇼츠', recentWeeks: 13, sort: 'views' }) },
-  { id: 'central',   name: '중앙기관 TOP',   sub: 'CENTRAL ORGS',   apply: () => ({ orgType: '중앙', recentWeeks: 13, sort: 'views' }) },
-  { id: 'local',     name: '지방기관 TOP',   sub: 'LOCAL ORGS',     apply: () => ({ orgType: '지방', recentWeeks: 13, sort: 'views' }) },
+  { id: 'topweek',   name: '이번 주 인기',  sub: 'TOP THIS WEEK',   title: '이번 주 수집된 영상 중 조회수 높은 순',              apply: () => ({ year: latestYear(), latestWeekOnly: true, sort: 'views' }) },
+  { id: 'topmonth',  name: '이번 달 인기',  sub: 'TOP THIS MONTH',  title: '최근 4주 수집된 영상 중 조회수 높은 순',             apply: () => ({ year: latestYear(), recentWeeks: 4, sort: 'views' }) },
+  { id: 'topviews',  name: '조회수 TOP',    sub: 'MOST VIEWED',     title: '최근 3달 · 영상 단위 조회수 높은 순',               apply: () => ({ recentWeeks: 12, sort: 'views' }) },
+  { id: 'toplikes',  name: '좋아요 TOP',    sub: 'MOST LIKED',      title: '최근 3달 · 영상 단위 좋아요 높은 순',               apply: () => ({ recentWeeks: 12, sort: 'likes' }) },
+  { id: 'comm',      name: '댓글 TOP',      sub: 'MOST DISCUSSED',  title: '최근 3달 · 영상 단위 댓글 많은 순',                 apply: () => ({ recentWeeks: 12, sort: 'comments' }) },
+  { id: 'shorts',    name: '쇼츠 TOP',      sub: 'BEST SHORTS',     title: '최근 3달 · 쇼츠 영상만 · 조회수 높은 순',          apply: () => ({ vidType: '쇼츠', recentWeeks: 12, sort: 'views' }) },
+  { id: 'central',   name: '중앙기관 TOP',  sub: 'CENTRAL ORGS',   title: '최근 3달 · 중앙기관 영상만 · 조회수 높은 순',      apply: () => ({ orgType: '중앙', recentWeeks: 12, sort: 'views' }) },
+  { id: 'local',     name: '지방기관 TOP',  sub: 'LOCAL ORGS',     title: '최근 3달 · 지방기관 영상만 · 조회수 높은 순',      apply: () => ({ orgType: '지방', recentWeeks: 12, sort: 'views' }) },
 ];
 let activePreset = null;
 let presetExtras = {}; // latestWeekOnly / recentWeeks runtime carrier
@@ -4263,10 +4263,10 @@ function buildPresets() {
     const locked = !canDo('allPresets') && !FREE_PRESET_IDS.includes(p.id);
     if (locked) {
       return `<button class="quick-chip quick-chip-locked" data-id="${p.id}"
-        onclick="showPlanToast('퀵픽 전체 이용은 Basic 이상 플랜에서 가능합니다.')" title="Basic 이상 플랜 필요">
+        onclick="showPlanToast('퀵픽 전체 이용은 Basic 이상 플랜에서 가능합니다.')" title="Basic 이상 플랜 필요 · ${p.title||''}">
         🔒 ${p.name}</button>`;
     }
-    return `<button class="quick-chip" data-id="${p.id}" onclick="applyPreset('${p.id}')">${p.name}</button>`;
+    return `<button class="quick-chip" data-id="${p.id}" onclick="applyPreset('${p.id}')" title="${p.title||''}">${p.name}</button>`;
   }).join('');
   el.innerHTML = `<span class="quick-label">Quick picks</span>` + chips;
 }
