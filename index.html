@@ -3104,7 +3104,7 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
 <!-- HEADER -->
 <header class="hdr">
   <div class="hdr-in">
-    <a class="brand" href="#">
+    <a class="brand" href="#" onclick="event.preventDefault(); resetToHome();">
       <div class="brand-mark"></div>
       <div class="brand-text">
         <span class="brand-name">잉크닷<em style="font-style:normal">.</em></span>
@@ -4377,6 +4377,12 @@ function applyFilters() {
 
   filtered = res;
   updateStats(); renderResult(); renderTopOrgChart();
+}
+
+function resetToHome() {
+  resetFilters();
+  switchMode('search');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function resetFilters() {
