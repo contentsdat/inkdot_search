@@ -17,7 +17,7 @@
   ══════════════════════════════════════════════════════ -->
 <script>
 const SUPABASE_URL  = 'https://gquhcutbwqeiuugzffjm.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxdWhjdXRid3FlaXV1Z3pmZmptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMzQyNjAsImV4cCI6MjA5NDcxMDI2MH0.rhBB8l3v7QAoVrbgEDIxXvL5f7xfRQpqMTDE77UzfgM';
+const SUPABASE_ANON = 'sb_publishable__QegLyW0msH9pouuEpEg4Q_gRejhziu';
 
 // ── 플랜별 기능 정의 (admin 패널에서도 동적으로 수정 가능) ──────────────────
 // 이 객체를 수정하면 플랜별 접근 권한이 즉시 반영됩니다.
@@ -3151,7 +3151,7 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
             <button class="auth-menu-item" id="menuAdminBtn" onclick="openAdminPanel()" style="display:none">
               ⚙ 관리자 패널
             </button>
-            <button class="auth-menu-item danger" onclick="signOut()">로그아웃</button>
+            <button class="auth-menu-item danger" onclick="event.stopPropagation(); signOut()">로그아웃</button>
           </div>
         </div>
       </div>
@@ -3683,8 +3683,8 @@ function setAuthMsg(text, type) {
 }
 
 async function signOut() {
-  toggleUserMenu(false);
   await _supabase.auth.signOut();
+  toggleUserMenu(false);
   updateAuthUI(null, 'guest');
 }
 
