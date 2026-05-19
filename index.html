@@ -3537,15 +3537,22 @@ function applyPlanGates() {
   gateElement('filterGateWrap', !canDo('filters'),
     '상세 필터 — Basic 이상 플랜', 'filters');
 
-  // 비교 탭
+  // 비교 탭 — 진입은 모든 플랜 허용, 실행 시점에 게이트
   const cmpTab = document.getElementById('tabCompare');
   if (cmpTab) {
+    cmpTab.onclick = () => switchMode('compare');
+    cmpTab.style.opacity = '';
+  }
+
+  // 비교 실행 버튼 — pro 미만이면 잠금 표시
+  const cmpRunBtn = document.getElementById('cmpRunBtn');
+  if (cmpRunBtn) {
     if (!canDo('compare')) {
-      cmpTab.onclick = () => showPlanToast('기관 비교는 Pro 이상 플랜에서 이용 가능합니다.');
-      cmpTab.style.opacity = '.45';
+      cmpRunBtn.style.opacity = '.5';
+      cmpRunBtn.title = 'Pro 이상 플랜에서 이용 가능합니다.';
     } else {
-      cmpTab.onclick = () => switchMode('compare');
-      cmpTab.style.opacity = '';
+      cmpRunBtn.style.opacity = '';
+      cmpRunBtn.title = '';
     }
   }
 }
@@ -3945,10 +3952,6 @@ function gatedDoSearch() {
 
 // ── 비교 탭 게이트 적용 ──
 function gatedSwitchMode(mode) {
-  if (mode === 'compare' && !canDo('compare')) {
-    showPlanToast('기관 비교는 Pro 이상 플랜에서 이용 가능합니다.');
-    return;
-  }
   switchMode(mode);
 }
 
@@ -5082,6 +5085,10 @@ function getActiveMetrics() {
 
 function runCompare() {
   if (!DB) return;
+  if (!canDo('compare')) {
+    showPlanToast('기관 비교는 Pro 이상 플랜에서 이용 가능합니다. 업그레이드 후 이용해주세요.');
+    return;
+  }
   const orgA = document.getElementById('cmpOrgA').value;
   const orgB = cmpOrgBVisible ? document.getElementById('cmpOrgB').value : '';
   const yearFrom = document.getElementById('cmpYearFrom').value;
