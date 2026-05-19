@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>플랜 안내 — 잉크닷</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --paper:     #fafaf7;
+  --paper-2:   #f3f2ec;
+  --paper-3:   #ebeae3;
+  --line:      #e0ddd4;
+  --line-2:    #cdc9bc;
+
+  --ink-1: #0e0e10;
+  --ink-2: #2a2a2c;
+  --ink-3: #5a5a5c;
+  --ink-4: #8b8b8d;
+  --ink-5: #b8b7b3;
+
+  --blue:    #1a3eff;
+  --blue-2:  #0029d6;
+  --blue-tint: #e6ebff;
+  --blue-tint-2: #d4ddff;
+
+  --green:       #1e7e34;
+  --green-tint:  #e6f4ea;
+
+  --t: 180ms cubic-bezier(.4,0,.2,1);
+}
+
+html, body { background: var(--paper); }
+body {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--ink-1);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── HEADER */
+.hdr {
+  position: sticky; top: 0; z-index: 90;
+  background: rgba(250,250,247,0.92);
+  backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.hdr-in {
+  max-width: 860px; margin: 0 auto;
+  height: 60px; padding: 0 32px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.brand {
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none; color: inherit;
+}
+.brand-mark {
+  position: relative; width: 28px; height: 28px;
+}
+.brand-mark::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--blue); border-radius: 50%;
+}
+.brand-mark::after {
+  content: ''; position: absolute;
+  width: 8px; height: 8px; top: 10px; left: 10px;
+  background: var(--paper); border-radius: 50%;
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.1; }
+.brand-name {
+  font-family: 'Instrument Serif', serif;
+  font-size: 24px; font-style: italic; font-weight: 400;
+  letter-spacing: -0.02em; color: var(--ink-1);
+}
+.brand-sub {
+  font-size: 10px; color: var(--ink-3);
+  letter-spacing: 0.01em; text-transform: uppercase; margin-top: 2px;
+}
+.btn-back {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: transparent; color: var(--ink-3);
+  border: 1px solid var(--line-2);
+  padding: 7px 13px;
+  font-size: 12px; font-weight: 500; font-family: inherit;
+  letter-spacing: 0.02em; border-radius: 999px;
+  text-decoration: none; cursor: pointer;
+  transition: var(--t);
+}
+.btn-back:hover { border-color: var(--ink-2); color: var(--ink-1); }
+.btn-back svg { width: 12px; height: 12px; }
+
+/* ── PAGE */
+.page {
+  max-width: 860px; margin: 0 auto;
+  padding: 56px 32px 80px;
+}
+
+/* ── HERO */
+.guide-hero {
+  margin-bottom: 56px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid var(--line);
+}
+.guide-eyebrow {
+  font-size: 11px; color: var(--ink-3);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.guide-eyebrow::after {
+  content: ''; flex: 1; height: 1px;
+  background: var(--line-2); max-width: 160px;
+}
+.guide-title {
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 700; letter-spacing: -0.04em;
+  line-height: 1.0; margin-bottom: 16px; color: var(--ink-1);
+}
+.guide-title .it {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic; font-weight: 400;
+  color: var(--blue); letter-spacing: -0.02em;
+}
+.guide-desc {
+  font-size: 15px; color: var(--ink-3);
+  line-height: 1.65; max-width: 480px;
+}
+
+/* ── PLAN CARDS */
+.plan-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border: 1px solid var(--line);
+  margin-bottom: 48px;
+  overflow: hidden;
+}
+.plan-card {
+  padding: 24px 20px;
+  border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.plan-card:last-child { border-right: none; }
+.plan-card.featured { background: var(--blue-tint); }
+
+.plan-badge {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 2px;
+  align-self: flex-start; margin-bottom: 4px;
+}
+.badge-free   { background: var(--paper-3); color: var(--ink-3); }
+.badge-basic  { background: var(--green-tint); color: var(--green); }
+.badge-pro    { background: var(--blue-tint-2); color: var(--blue-2); }
+.badge-admin  { background: var(--ink-1); color: var(--paper); }
+
+.plan-card-name {
+  font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink-1);
+}
+.plan-card-desc {
+  font-size: 12px; color: var(--ink-4); line-height: 1.5; margin-top: 2px;
+}
+
+/* ── TABLE */
+.plan-wrap { border: 1px solid var(--line); overflow: hidden; }
+
+.plan-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.plan-table thead tr {
+  background: var(--paper-2);
+}
+.plan-table th {
+  padding: 12px 16px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--ink-4);
+  border-bottom: 2px solid var(--line);
+  border-right: 1px solid var(--line);
+  text-align: center;
+}
+.plan-table th:first-child { text-align: left; }
+.plan-table th:last-child { border-right: none; }
+.plan-table th.col-pro {
+  background: var(--blue-tint);
+  color: var(--blue-2);
+  border-bottom-color: var(--blue);
+}
+
+.plan-table .group-row td {
+  padding: 8px 16px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink-4);
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--line);
+  border-top: 1px solid var(--line-2);
+}
+
+.plan-table tbody tr:not(.group-row):hover td { background: var(--paper-2); }
+
+.plan-table td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  font-size: 13px; color: var(--ink-2);
+  transition: background var(--t);
+}
+.plan-table td:last-child { border-right: none; }
+.plan-table tbody tr:last-child td { border-bottom: none; }
+
+.plan-table td.feat {
+  font-weight: 500; color: var(--ink-2);
+  display: flex; align-items: center; gap: 8px;
+}
+.feat-icon { flex-shrink: 0; }
+
+.plan-table td.val { text-align: center; }
+.val .ok    { color: var(--blue); font-size: 15px; font-weight: 700; }
+.val .no    { color: var(--ink-5); }
+.val .limit { font-size: 11px; color: var(--ink-4); font-weight: 500; }
+
+/* ── NOTE */
+.plan-note {
+  margin-top: 14px;
+  font-size: 12px; color: var(--ink-4); line-height: 1.7;
+  display: flex; gap: 7px;
+}
+.plan-note::before {
+  content: '*'; flex-shrink: 0;
+  color: var(--blue); font-weight: 700; margin-top: 1px;
+}
+
+/* ── FOOTER */
+.footer {
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px;
+}
+.footer-brand {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic; font-size: 18px; color: var(--ink-3);
+}
+.footer-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--ink-5);
+  letter-spacing: 0.04em;
+}
+
+/* ── MOBILE */
+@media (max-width: 640px) {
+  .hdr-in { padding: 0 16px; }
+  .page { padding: 40px 20px 60px; }
+  .guide-hero { margin-bottom: 40px; padding-bottom: 32px; }
+
+  .plan-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .plan-cards .plan-card:nth-child(2) { border-right: none; }
+  .plan-cards .plan-card:nth-child(1),
+  .plan-cards .plan-card:nth-child(2) { border-bottom: 1px solid var(--line); }
+
+  .plan-wrap { overflow-x: auto; }
+  .plan-table { min-width: 520px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-in">
+    <a class="brand" href="index.html">
+      <div class="brand-mark"></div>
+      <div class="brand-text">
+        <span class="brand-name">잉크닷<em style="font-style:normal">.</em></span>
+        <span class="brand-sub">INKDOT · ARCHIVE</span>
+      </div>
+    </a>
+    <a class="btn-back" href="index.html">
+      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7.5 2L3 6l4.5 4"/></svg>
+      돌아가기
+    </a>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="guide-hero">
+    <div class="guide-eyebrow">Plans · 플랜 안내</div>
+    <h1 class="guide-title">이용 <span class="it">플랜</span></h1>
+    <p class="guide-desc">플랜별로 이용 가능한 기능이 다릅니다. 비로그인 게스트는 Free 플랜과 동일하게 이용할 수 있습니다.</p>
+  </div>
+
+  <!-- PLAN CARDS -->
+  <div class="plan-cards">
+    <div class="plan-card">
+      <span class="plan-badge badge-free">Free</span>
+      <div class="plan-card-name">기본 조회</div>
+      <div class="plan-card-desc">비로그인 게스트 포함.<br>목록 조회 및 기본 검색</div>
+    </div>
+    <div class="plan-card">
+      <span class="plan-badge badge-basic">Basic</span>
+      <div class="plan-card-name">검색 · 필터</div>
+      <div class="plan-card-desc">검색과 전체 필터를<br>제한 없이 사용</div>
+    </div>
+    <div class="plan-card featured">
+      <span class="plan-badge badge-pro">Pro</span>
+      <div class="plan-card-name">분석 · 내보내기</div>
+      <div class="plan-card-desc">기관 비교, 구독자 분석,<br>데이터 내보내기(Export)</div>
+    </div>
+    <div class="plan-card">
+      <span class="plan-badge badge-admin">Admin</span>
+      <div class="plan-card-name">전체 관리</div>
+      <div class="plan-card-desc">모든 기능 + 플랜 설정 및<br>데이터 로드 관리</div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="plan-wrap">
+    <table class="plan-table">
+      <thead>
+        <tr>
+          <th style="width:200px;">기능</th>
+          <th>Free</th>
+          <th>Basic</th>
+          <th class="col-pro">Pro</th>
+          <th>Admin</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 검색 -->
+        <tr class="group-row"><td colspan="5">검색</td></tr>
+        <tr>
+          <td class="feat"><span class="feat-icon">📋</span>영상 목록 조회</td>
+          <td class="val"><span class="ok">✓</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+        </tr>
+        <tr>
+          <td class="feat"><span class="feat-icon">🔍</span>키워드 검색</td>
+          <td class="val"><span class="limit">제한적*</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+        </tr>
+        <tr>
+          <td class="feat"><span class="feat-icon">🎛️</span>필터 전체 사용</td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+        </tr>
+
+        <!-- 분석 -->
+        <tr class="group-row"><td colspan="5">분석</td></tr>
+        <tr>
+          <td class="feat"><span class="feat-icon">⇄</span>기관 비교 분석</td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+        </tr>
+        <tr>
+          <td class="feat"><span class="feat-icon">📈</span>구독자 추이 분석</td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+        </tr>
+        <tr>
+          <td class="feat"><span class="feat-icon">◈</span>채널 심층 분석</td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+        </tr>
+
+        <!-- 내보내기·관리 -->
+        <tr class="group-row"><td colspan="5">내보내기 / 관리</td></tr>
+        <tr>
+          <td class="feat"><span class="feat-icon">📤</span>데이터 내보내기 (Export)</td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+        </tr>
+        <tr>
+          <td class="feat"><span class="feat-icon">⚙️</span>플랜 기능 설정 관리</td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+        </tr>
+        <tr>
+          <td class="feat"><span class="feat-icon">🗄️</span>데이터 로드 관리</td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="ok">✓</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="plan-note">Free 플랜(비로그인 게스트 포함)은 목록 조회와 기본 검색만 이용 가능합니다. 검색 결과 수 등 일부 기능이 제한될 수 있습니다.</p>
+
+  <footer class="footer">
+    <span class="footer-brand">잉크닷.</span>
+    <span class="footer-meta">INKDOT · 공공기관 유튜브 아카이브 · 플랜 안내</span>
+  </footer>
+
+</div>
+</body>
+</html>
