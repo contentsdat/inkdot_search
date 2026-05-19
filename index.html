@@ -3522,6 +3522,7 @@ function updateAuthUI(user, plan) {
   }
 
   applyPlanGates();
+  if (typeof buildPresets === 'function') buildPresets();
 }
 
 // ── 플랜 게이트 적용 ──
