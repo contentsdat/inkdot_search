@@ -16,8 +16,8 @@
      2. Project URL / anon public key 복사
   ══════════════════════════════════════════════════════ -->
 <script>
-const SUPABASE_URL  = 'https://gquhcutbwqeiuugzffjm.supabase.co';
-const SUPABASE_ANON = sb_publishable__QegLyW0msH9pouuEpEg4Q_gRejhziu';
+const SUPABASE_URL  = 'https://YOUR_PROJECT_ID.supabase.co';   // ← 교체
+const SUPABASE_ANON = 'YOUR_ANON_PUBLIC_KEY';                   // ← 교체
 
 // ── 플랜별 기능 정의 (admin 패널에서도 동적으로 수정 가능) ──────────────────
 // 이 객체를 수정하면 플랜별 접근 권한이 즉시 반영됩니다.
@@ -3821,15 +3821,18 @@ async function loadFromUrl() {
 }
 
 // ─── Auto load ───
+const DATA_URL = 'https://raw.githubusercontent.com/contentsdat/inkdot_search/main/data.json';
+const DESC_URL = 'https://raw.githubusercontent.com/contentsdat/inkdot_search/main/descriptions.json';
+
 (async () => {
   try {
-    const res = await fetch('./data.json');
-    if (!res.ok) { openDbModal(); return; }
+    const res = await fetch(DATA_URL);
+    if (!res.ok) throw new Error('fetch failed');
     const json = await res.json();
 
     // descriptions.json 병렬 로드 (없어도 정상 동작)
     try {
-      const descRes = await fetch('./descriptions.json');
+      const descRes = await fetch(DESC_URL);
       if (descRes.ok) {
         const descMap = await descRes.json();
         const extractId = url => {
@@ -3847,7 +3850,10 @@ async function loadFromUrl() {
     } catch (e) { /* descriptions.json 없으면 무시 */ }
 
     initApp(json);
-  } catch (e) { openDbModal(); }
+  } catch (e) {
+    // GitHub에서 로드 실패 시 수동 업로드 모달 표시
+    openDbModal();
+  }
 })();
 
 // ─── Subscriber auto-fetch ───
