@@ -16,18 +16,19 @@
      2. Project URL / anon public key 복사
   ══════════════════════════════════════════════════════ -->
 <script>
-const SUPABASE_URL  = 'https://gquhcutbwqeiuugzffjm.supabase.co';
-const SUPABASE_ANON = 'sb_publishable__QegLyW0msH9pouuEpEg4Q_gRejhziu';
+const SUPABASE_URL  = 'https://YOUR_PROJECT_ID.supabase.co';   // ← 교체
+const SUPABASE_ANON = 'YOUR_ANON_PUBLIC_KEY';                   // ← 교체
 
 // ── 플랜별 기능 정의 (admin 패널에서도 동적으로 수정 가능) ──────────────────
 // 이 객체를 수정하면 플랜별 접근 권한이 즉시 반영됩니다.
 // Supabase DB의 plan_features 테이블과 연동 예정 (현재는 로컬 정의)
 let PLAN_FEATURES = {
-  guest: { label: '게스트',    color: '#8b8b8d', search: false, filters: false, compare: false, export: false, dbLoad: false },
-  free:  { label: 'Free',     color: '#8b8b8d', search: false, filters: false, compare: false, export: false, dbLoad: false },
-  basic: { label: 'Basic',    color: '#1a3eff', search: true,  filters: true,  compare: false, export: false, dbLoad: false },
-  pro:   { label: 'Pro',      color: '#7c3aed', search: true,  filters: true,  compare: true,  export: true,  dbLoad: false },
-  admin: { label: 'Admin',    color: '#059669', search: true,  filters: true,  compare: true,  export: true,  dbLoad: true  },
+  //                                                                                         페이지2+  퀵픽전체  상세정보
+  guest: { label: '게스트', color: '#8b8b8d', search: false, filters: false, compare: false, export: false, dbLoad: false, page2: false, allPresets: false, detail: false },
+  free:  { label: 'Free',   color: '#8b8b8d', search: false, filters: false, compare: false, export: false, dbLoad: false, page2: false, allPresets: false, detail: false },
+  basic: { label: 'Basic',  color: '#1a3eff', search: true,  filters: true,  compare: false, export: false, dbLoad: false, page2: true,  allPresets: true,  detail: true  },
+  pro:   { label: 'Pro',    color: '#7c3aed', search: true,  filters: true,  compare: true,  export: true,  dbLoad: false, page2: true,  allPresets: true,  detail: true  },
+  admin: { label: 'Admin',  color: '#059669', search: true,  filters: true,  compare: true,  export: true,  dbLoad: true,  page2: true,  allPresets: true,  detail: true  },
 };
 
 // ── 플랜 계층 (숫자가 높을수록 상위) ──
@@ -2688,6 +2689,14 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
 .gate-badge:hover { background: var(--blue); }
 .gate-badge svg { width: 12px; height: 12px; flex-shrink: 0; }
 
+/* 잠긴 퀵픽 칩 */
+.quick-chip-locked {
+  opacity: .5;
+  cursor: not-allowed !important;
+  filter: grayscale(0.4);
+  position: relative;
+}
+
 /* ── 플랜 업그레이드 안내 토스트 ── */
 .plan-toast {
   position: fixed; bottom: 24px; left: 50%; z-index: 9500;
@@ -3590,11 +3599,14 @@ function adminModalBgClick(e) { if (e.target === e.currentTarget) closeAdminPane
 function renderPlanFeatureTable() {
   const plans = ['free', 'basic', 'pro', 'admin'];
   const features = [
-    { key: 'search',  label: '검색 (키워드)' },
-    { key: 'filters', label: '상세 필터' },
-    { key: 'compare', label: '기관 비교' },
-    { key: 'export',  label: '데이터 내보내기' },
-    { key: 'dbLoad',  label: 'DB 로드 관리' },
+    { key: 'search',     label: '검색 (키워드)' },
+    { key: 'filters',    label: '상세 필터' },
+    { key: 'page2',      label: '2페이지 이후 열람' },
+    { key: 'allPresets', label: '퀵픽 전체 이용' },
+    { key: 'detail',     label: '영상 상세 정보' },
+    { key: 'compare',    label: '기관 비교' },
+    { key: 'export',     label: '데이터 내보내기' },
+    { key: 'dbLoad',     label: 'DB 로드 관리' },
   ];
 
   const headers = ['기능', ...plans.map(p => PLAN_FEATURES[p]?.label || p)];
@@ -3631,6 +3643,7 @@ function saveFeatureSettings() {
   PLAN_FEATURES.guest = { ...PLAN_FEATURES.free, label: '게스트', color: '#8b8b8d' };
 
   applyPlanGates();
+  if (typeof buildPresets === 'function') buildPresets();
 
   const msg = document.getElementById('adminFeatureMsg');
   msg.textContent = '✓ 설정이 저장되었습니다. (현재 세션에만 적용. Supabase DB 연동 시 영구 저장 가능)';
@@ -4024,8 +4037,17 @@ function latestWeek() {
 
 function buildPresets() {
   const el = document.getElementById('presetList');
-  const chips = PRESETS.map(p => `
-    <button class="quick-chip" data-id="${p.id}" onclick="applyPreset('${p.id}')">${p.name}</button>`).join('');
+  // 게스트/free: 처음 2개(이번주 인기, 이달 TOP)만 자유, 나머지는 잠금
+  const FREE_PRESET_IDS = ['topweek', 'topmonth'];
+  const chips = PRESETS.map(p => {
+    const locked = !canDo('allPresets') && !FREE_PRESET_IDS.includes(p.id);
+    if (locked) {
+      return `<button class="quick-chip quick-chip-locked" data-id="${p.id}"
+        onclick="showPlanToast('퀵픽 전체 이용은 Basic 이상 플랜에서 가능합니다.')" title="Basic 이상 플랜 필요">
+        🔒 ${p.name}</button>`;
+    }
+    return `<button class="quick-chip" data-id="${p.id}" onclick="applyPreset('${p.id}')">${p.name}</button>`;
+  }).join('');
   el.innerHTML = `<span class="quick-label">Quick picks</span>` + chips;
 }
 
@@ -4440,6 +4462,11 @@ function renderPagination(totalPages) {
   document.getElementById('pagination').innerHTML = `<div class="pager">${btns}</div>`;
 }
 function goPage(n) {
+  // ── 2페이지 이후 게이트 (Basic 이상) ──
+  if (n > 1 && !canDo('page2')) {
+    showPlanToast('2페이지 이후는 Basic 이상 플랜에서 이용 가능합니다.');
+    return;
+  }
   currentPage = n; renderResult();
   const area = document.getElementById('resultArea');
   if (area) {
@@ -4459,6 +4486,11 @@ function getThumbnail(url) {
   return id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : null;
 }
 function openModal(d) {
+  // ── 영상 상세 정보 게이트 (Basic 이상) ──
+  if (!canDo('detail')) {
+    showPlanToast('영상 상세 정보는 Basic 이상 플랜에서 이용 가능합니다.');
+    return;
+  }
   const vid = getVideoId(d.u);
   const thumbArea = document.getElementById('modalThumbArea');
 
