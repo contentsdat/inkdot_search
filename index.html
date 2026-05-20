@@ -23,12 +23,12 @@ const SUPABASE_ANON = 'sb_publishable__QegLyW0msH9pouuEpEg4Q_gRejhziu';
 // 이 객체를 수정하면 플랜별 접근 권한이 즉시 반영됩니다.
 // Supabase DB의 plan_features 테이블과 연동 예정 (현재는 로컬 정의)
 let PLAN_FEATURES = {
-  //                                                                                         페이지2+  퀵픽전체  상세정보
-  guest: { label: '게스트', color: '#8b8b8d', search: false, filters: false, compare: false, export: false, dbLoad: false, page2: false, allPresets: false, detail: false },
-  free:  { label: 'Free',   color: '#8b8b8d', search: false, filters: false, compare: false, export: false, dbLoad: false, page2: false, allPresets: false, detail: false },
-  basic: { label: 'Basic',  color: '#1a3eff', search: true,  filters: true,  compare: false, export: false, dbLoad: false, page2: true,  allPresets: true,  detail: true  },
-  pro:   { label: 'Pro',    color: '#7c3aed', search: true,  filters: true,  compare: true,  export: true,  dbLoad: false, page2: true,  allPresets: true,  detail: true  },
-  admin: { label: 'Admin',  color: '#059669', search: true,  filters: true,  compare: true,  export: true,  dbLoad: true,  page2: true,  allPresets: true,  detail: true  },
+  //                                                                                         페이지2+  퀵픽전체  상세정보  검색한도   비교한도
+  guest: { label: '게스트', color: '#8b8b8d', search: false, filters: false, compare: false, export: false, dbLoad: false, page2: false, allPresets: false, detail: false, searchLimit: 0,    compareLimit: 0    },
+  free:  { label: 'Free',   color: '#8b8b8d', search: false, filters: false, compare: false, export: false, dbLoad: false, page2: false, allPresets: false, detail: false, searchLimit: 0,    compareLimit: 0    },
+  basic: { label: 'Basic',  color: '#1a3eff', search: true,  filters: true,  compare: true,  export: false, dbLoad: false, page2: true,  allPresets: true,  detail: true,  searchLimit: 50,   compareLimit: 10   },
+  pro:   { label: 'Pro',    color: '#7c3aed', search: true,  filters: true,  compare: true,  export: true,  dbLoad: false, page2: true,  allPresets: true,  detail: true,  searchLimit: 300,  compareLimit: 100  },
+  admin: { label: 'Admin',  color: '#059669', search: true,  filters: true,  compare: true,  export: true,  dbLoad: true,  page2: true,  allPresets: true,  detail: true,  searchLimit: null, compareLimit: null },
 };
 
 // ── 플랜 계층 (숫자가 높을수록 상위) ──
@@ -41,10 +41,54 @@ let AUTH = {
   user: null,
   plan: 'guest',   // guest | free | basic | pro | admin
   loading: true,
+  usage: {
+    searchCount: 0,
+    compareCount: 0,
+    resetMonth: '',  // 'YYYY-MM' 형식
+  },
 };
 
 function canDo(feature) {
   return !!(PLAN_FEATURES[AUTH.plan] || PLAN_FEATURES.guest)[feature];
+}
+
+// ── 이번 달 YYYY-MM 문자열 ──
+function currentMonth() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+
+// ── 남은 횟수 반환 (null = 무제한) ──
+function remainingCount(type) {
+  const feat = PLAN_FEATURES[AUTH.plan] || PLAN_FEATURES.guest;
+  const limit = type === 'search' ? feat.searchLimit : feat.compareLimit;
+  if (limit === null) return null;
+  const used = type === 'search' ? AUTH.usage.searchCount : AUTH.usage.compareCount;
+  return Math.max(0, limit - used);
+}
+
+// ── 한도 초과 여부 ──
+function isLimitReached(type) {
+  const r = remainingCount(type);
+  return r !== null && r <= 0;
+}
+
+// ── 소진 토스트 메시지 ──
+function getLimitMsg(type) {
+  const plan = AUTH.plan;
+  const feat = PLAN_FEATURES[plan] || PLAN_FEATURES.guest;
+  const limit = type === 'search' ? feat.searchLimit : feat.compareLimit;
+  const nextPlan = plan === 'basic' ? 'Pro' : null;
+  const nextLimit = type === 'search'
+    ? PLAN_FEATURES.pro?.searchLimit
+    : PLAN_FEATURES.pro?.compareLimit;
+  const action = type === 'search' ? '검색' : '비교 분석';
+
+  if (nextPlan) {
+    return `이번 달 ${action} 횟수(${limit}회)를 모두 사용했어요. ${nextPlan} 플랜에서 ${nextLimit}회까지 이용할 수 있어요.`;
+  } else {
+    return `이번 달 ${action} 횟수(${limit}회)를 모두 사용했어요. 다음 달 1일에 초기화돼요.`;
+  }
 }
 </script>
 <style>
@@ -2661,6 +2705,41 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
 .auth-menu-item.danger { color: #dc2626; }
 .auth-menu-item.danger:hover { background: #fef2f2; }
 
+/* ── 사용량 표시 ── */
+.auth-menu-usage {
+  padding: 10px 16px 12px;
+  border-top: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.usage-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.usage-label {
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 10px; color: var(--ink-3);
+  letter-spacing: 0.02em; text-transform: uppercase;
+  flex-shrink: 0;
+}
+.usage-bar-wrap {
+  flex: 1; height: 3px; background: var(--line);
+  border-radius: 999px; overflow: hidden;
+}
+.usage-bar {
+  height: 100%; border-radius: 999px;
+  background: var(--blue);
+  transition: width .4s ease;
+}
+.usage-bar.warn { background: #f59e0b; }
+.usage-bar.danger { background: #dc2626; }
+.usage-count {
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 10px; font-weight: 600;
+  color: var(--ink-2); white-space: nowrap;
+  min-width: 44px; text-align: right;
+}
+.usage-count.warn { color: #f59e0b; }
+.usage-count.danger { color: #dc2626; }
+
 /* ── 기능 게이트 오버레이 ── */
 .feature-gate {
   position: relative;
@@ -2906,22 +2985,6 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
 .admin-member-table td.col-date { color: var(--ink-4); font-size: 11px; white-space: nowrap; }
 .admin-member-table td.col-plan { white-space: nowrap; }
 .admin-member-table td.col-action { white-space: nowrap; }
-.admin-pagination {
-  display: flex; align-items: center; justify-content: center;
-  gap: 6px; margin-top: 10px; padding: 2px 0;
-}
-.admin-pagination button {
-  background: none; border: 1.5px solid var(--line-2);
-  padding: 4px 12px; font-family: 'Pretendard', -apple-system, sans-serif;
-  font-size: 11px; color: var(--ink-3); cursor: pointer;
-  transition: var(--t); letter-spacing: 0.02em;
-}
-.admin-pagination button:hover:not(:disabled) { border-color: var(--blue); color: var(--blue); }
-.admin-pagination button:disabled { opacity: 0.35; cursor: default; }
-.admin-pagination .pg-info {
-  font-family: 'Pretendard', -apple-system, sans-serif;
-  font-size: 11px; color: var(--ink-4); letter-spacing: 0.02em; min-width: 70px; text-align: center;
-}
 .admin-inline-select {
   appearance: none; padding: 3px 22px 3px 7px;
   border: 1.5px solid var(--line-2);
@@ -3005,15 +3068,10 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
     <div class="admin-section-title" style="margin-top:32px">전체 회원 목록 — ALL MEMBERS</div>
     <div class="admin-member-toolbar">
       <span class="admin-member-count" id="adminMemberCount">—</span>
-      <button class="admin-member-refresh" onclick="loadAllMembers(1)">↻ 새로고침</button>
+      <button class="admin-member-refresh" onclick="loadAllMembers()">↻ 새로고침</button>
     </div>
     <div id="adminMemberTableWrap">
       <div class="admin-no-result">패널을 열면 자동으로 불러옵니다.</div>
-    </div>
-    <div class="admin-pagination" id="adminPagination" style="display:none">
-      <button id="pgPrev" onclick="loadAllMembers(_memberPage - 1)">← 이전</button>
-      <span class="pg-info" id="pgInfo"></span>
-      <button id="pgNext" onclick="loadAllMembers(_memberPage + 1)">다음 →</button>
     </div>
     <div class="admin-msg" id="adminMemberMsg"></div>
 
@@ -3172,6 +3230,19 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
             <button class="auth-menu-item" id="menuAdminBtn" onclick="openAdminPanel()" style="display:none">
               ⚙ 관리자 패널
             </button>
+            <!-- 사용량 표시 (basic/pro만) -->
+            <div class="auth-menu-usage" id="menuUsageWrap" style="display:none">
+              <div class="usage-row" id="menuUsageSearch">
+                <span class="usage-label">검색</span>
+                <div class="usage-bar-wrap"><div class="usage-bar" id="usageBarSearch"></div></div>
+                <span class="usage-count" id="usageCountSearch"></span>
+              </div>
+              <div class="usage-row" id="menuUsageCompare">
+                <span class="usage-label">비교</span>
+                <div class="usage-bar-wrap"><div class="usage-bar" id="usageBarCompare"></div></div>
+                <span class="usage-count" id="usageCountCompare"></span>
+              </div>
+            </div>
             <button class="auth-menu-item danger" onclick="event.stopPropagation(); signOut()">로그아웃</button>
           </div>
         </div>
@@ -3472,13 +3543,14 @@ async function initAuth() {
 // ── 사용자 플랜 로드 (user_plans 테이블에서) ──
 async function loadUserPlan(user) {
   let plan = 'free';
+  let usage = { searchCount: 0, compareCount: 0, resetMonth: currentMonth() };
   try {
     if (SUPABASE_URL.includes('YOUR_PROJECT_ID')) {
       // 플레이스홀더: 실제 연동 전까지 free로 처리
     } else {
       const { data, error } = await _supabase
         .from('user_plans')
-        .select('plan')
+        .select('plan, search_count, compare_count, reset_month')
         .eq('user_id', user.id)
         .single();
 
@@ -3489,20 +3561,86 @@ async function loadUserPlan(user) {
             user_id: user.id,
             email: user.email,
             plan: 'free',
+            search_count: 0,
+            compare_count: 0,
+            reset_month: currentMonth(),
             updated_at: new Date().toISOString()
           });
         } else {
           console.warn('[inkdot] loadUserPlan error:', error.message, error.code);
         }
-      } else if (data?.plan) {
-        plan = data.plan;
+      } else if (data) {
+        plan = data.plan || 'free';
+        // 월이 바뀌었으면 카운트 리셋
+        const storedMonth = data.reset_month || '';
+        const thisMonth = currentMonth();
+        if (storedMonth !== thisMonth) {
+          await _supabase.from('user_plans').update({
+            search_count: 0,
+            compare_count: 0,
+            reset_month: thisMonth,
+            updated_at: new Date().toISOString()
+          }).eq('user_id', user.id);
+          usage = { searchCount: 0, compareCount: 0, resetMonth: thisMonth };
+        } else {
+          usage = {
+            searchCount: data.search_count || 0,
+            compareCount: data.compare_count || 0,
+            resetMonth: storedMonth,
+          };
+        }
       }
     }
   } catch (e) {
     console.warn('[inkdot] loadUserPlan exception:', e.message);
   }
 
+  AUTH.usage = usage;
   updateAuthUI(user, plan);
+}
+
+// ── 사용량 바 UI 업데이트 ──
+function updateUsageUI() {
+  const plan = AUTH.plan;
+  const feat = PLAN_FEATURES[plan] || PLAN_FEATURES.guest;
+  const wrap = document.getElementById('menuUsageWrap');
+  if (!wrap) return;
+
+  // basic/pro만 표시
+  const showUsage = plan === 'basic' || plan === 'pro';
+  wrap.style.display = showUsage ? '' : 'none';
+  if (!showUsage) return;
+
+  // 검색: basic/pro 모두 표시
+  const sLimit = feat.searchLimit;
+  const sUsed  = AUTH.usage.searchCount;
+  const sPct   = sLimit ? Math.min(100, sUsed / sLimit * 100) : 0;
+  const sRemain = Math.max(0, sLimit - sUsed);
+  const sBarEl  = document.getElementById('usageBarSearch');
+  const sCntEl  = document.getElementById('usageCountSearch');
+  const sRowEl  = document.getElementById('menuUsageSearch');
+  if (sBarEl && sCntEl && sRowEl) {
+    sRowEl.style.display = '';
+    sBarEl.style.width = sPct + '%';
+    sBarEl.className = 'usage-bar' + (sPct >= 100 ? ' danger' : sPct >= 80 ? ' warn' : '');
+    sCntEl.textContent = `${sUsed} / ${sLimit}`;
+    sCntEl.className = 'usage-count' + (sPct >= 100 ? ' danger' : sPct >= 80 ? ' warn' : '');
+  }
+
+  // 비교: basic/pro 모두 표시
+  const cLimit = feat.compareLimit;
+  const cUsed  = AUTH.usage.compareCount;
+  const cPct   = cLimit ? Math.min(100, cUsed / cLimit * 100) : 0;
+  const cBarEl  = document.getElementById('usageBarCompare');
+  const cCntEl  = document.getElementById('usageCountCompare');
+  const cRowEl  = document.getElementById('menuUsageCompare');
+  if (cBarEl && cCntEl && cRowEl) {
+    cRowEl.style.display = '';
+    cBarEl.style.width = cPct + '%';
+    cBarEl.className = 'usage-bar' + (cPct >= 100 ? ' danger' : cPct >= 80 ? ' warn' : '');
+    cCntEl.textContent = `${cUsed} / ${cLimit}`;
+    cCntEl.className = 'usage-count' + (cPct >= 100 ? ' danger' : cPct >= 80 ? ' warn' : '');
+  }
 }
 
 // ── UI 업데이트 ──
@@ -3543,6 +3681,7 @@ function updateAuthUI(user, plan) {
   }
 
   applyPlanGates();
+  updateUsageUI();
   if (typeof buildPresets === 'function') buildPresets();
 }
 
@@ -3565,12 +3704,12 @@ function applyPlanGates() {
     cmpTab.style.opacity = '';
   }
 
-  // 비교 실행 버튼 — pro 미만이면 잠금 표시
+  // 비교 실행 버튼 — basic/pro 모두 허용, 한도 초과 시 runCompare 내부에서 차단
   const cmpRunBtn = document.getElementById('cmpRunBtn');
   if (cmpRunBtn) {
     if (!canDo('compare')) {
       cmpRunBtn.style.opacity = '.5';
-      cmpRunBtn.title = 'Pro 이상 플랜에서 이용 가능합니다.';
+      cmpRunBtn.title = 'Basic 이상 플랜에서 이용 가능합니다.';
     } else {
       cmpRunBtn.style.opacity = '';
       cmpRunBtn.title = '';
@@ -3741,7 +3880,7 @@ function openAdminPanel() {
   toggleUserMenu(false);
   renderPlanFeatureTable();
   document.getElementById('adminModal').classList.add('open');
-  loadAllMembers(1);
+  loadAllMembers();
 }
 function closeAdminPanel() { document.getElementById('adminModal').classList.remove('open'); }
 function adminModalBgClick(e) { if (e.target === e.currentTarget) closeAdminPanel(); }
@@ -3802,49 +3941,31 @@ function saveFeatureSettings() {
   setTimeout(() => { msg.textContent = ''; }, 4000);
 }
 
-// ── 전체 회원 목록 불러오기 (페이지네이션)
-const MEMBERS_PER_PAGE = 20;
-let _memberPage = 1;
-let _memberTotal = 0;
-
-async function loadAllMembers(page = 1) {
+// ── 전체 회원 목록 불러오기 (RPC: get_all_users)
+async function loadAllMembers() {
   const wrap = document.getElementById('adminMemberTableWrap');
   const countEl = document.getElementById('adminMemberCount');
   const msgEl = document.getElementById('adminMemberMsg');
-  const pgEl = document.getElementById('adminPagination');
-  const pgInfo = document.getElementById('pgInfo');
-  const pgPrev = document.getElementById('pgPrev');
-  const pgNext = document.getElementById('pgNext');
   if (!wrap) return;
 
   wrap.innerHTML = `<div class="admin-no-result">불러오는 중...</div>`;
   if (countEl) countEl.textContent = '—';
-  if (pgEl) pgEl.style.display = 'none';
 
   if (SUPABASE_URL.includes('YOUR_PROJECT_ID')) {
     wrap.innerHTML = `<div class="admin-no-result">⚠ Supabase 연결이 필요합니다.</div>`;
     return;
   }
 
-  const from = (page - 1) * MEMBERS_PER_PAGE;
-  const to = from + MEMBERS_PER_PAGE - 1;
-
   try {
-    const { data, error, count } = await _supabase
-      .rpc('get_all_users', {}, { count: 'exact' })
-      .range(from, to);
+    const { data, error } = await _supabase.rpc('get_all_users');
     if (error) throw error;
 
     if (!data || data.length === 0) {
-      wrap.innerHTML = `<div class="admin-no-result">${page === 1 ? '등록된 회원이 없습니다.' : '마지막 페이지입니다.'}</div>`;
+      wrap.innerHTML = `<div class="admin-no-result">등록된 회원이 없습니다.</div>`;
       return;
     }
 
-    _memberPage = page;
-    _memberTotal = count ?? _memberTotal;
-    const totalPages = Math.ceil(_memberTotal / MEMBERS_PER_PAGE);
-
-    if (countEl) countEl.textContent = `총 ${_memberTotal}명`;
+    if (countEl) countEl.textContent = `총 ${data.length}명`;
 
     const planColors = { free: '#8b8b8d', basic: '#1d7aed', pro: '#9333ea', admin: '#e04c2f' };
 
@@ -3853,13 +3974,13 @@ async function loadAllMembers(page = 1) {
         ? new Date(u.created_at).toLocaleDateString('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit' })
         : '—';
       const plan = u.plan || 'free';
+      const planLabel = PLAN_FEATURES[plan]?.label || plan.toUpperCase();
+      const planColor = planColors[plan] || '#8b8b8d';
       const opts = ['free','basic','pro','admin'].map(p =>
-        `<option value="${p}" ${plan===p?'selected':''}>
-          ${PLAN_FEATURES[p]?.label||p.toUpperCase()}</option>`
+        `<option value="${p}" ${plan===p?'selected':''}>${PLAN_FEATURES[p]?.label||p.toUpperCase()}</option>`
       ).join('');
-      const nameStr = u.full_name
-        ? `<span style="font-weight:600">${esc(u.full_name)}</span><br><span style="color:var(--ink-4);font-size:11px">${esc(u.email)}</span>`
-        : esc(u.email);
+
+      const nameStr = u.full_name ? `<span style="font-weight:600">${esc(u.full_name)}</span><br><span style="color:var(--ink-4);font-size:11px">${esc(u.email)}</span>` : esc(u.email);
 
       return `<tr id="mrow_${u.user_id}">
         <td class="col-email" title="${esc(u.email)}">${nameStr}</td>
@@ -3888,14 +4009,6 @@ async function loadAllMembers(page = 1) {
           <tbody>${rows}</tbody>
         </table>
       </div>`;
-
-    // 페이지네이션 UI 업데이트
-    if (pgEl && totalPages > 1) {
-      pgEl.style.display = 'flex';
-      if (pgInfo) pgInfo.textContent = `${page} / ${totalPages}`;
-      if (pgPrev) pgPrev.disabled = page <= 1;
-      if (pgNext) pgNext.disabled = page >= totalPages;
-    }
 
   } catch (e) {
     wrap.innerHTML = `<div class="admin-no-result">오류: ${esc(e.message)}</div>`;
@@ -3991,9 +4104,27 @@ async function saveUserPlan(userId, email) {
   btn.disabled = false;
 }
 
+// ── 사용량 DB 증가 ──
+async function incrementUsage(type) {
+  if (!AUTH.user) return;
+  const field = type === 'search' ? 'search_count' : 'compare_count';
+  if (type === 'search') AUTH.usage.searchCount++;
+  else AUTH.usage.compareCount++;
+  updateUsageUI();
+  try {
+    await _supabase.from('user_plans')
+      .update({ [field]: (type === 'search' ? AUTH.usage.searchCount : AUTH.usage.compareCount), updated_at: new Date().toISOString() })
+      .eq('user_id', AUTH.user.id);
+  } catch(e) {
+    console.warn('[inkdot] incrementUsage error:', e.message);
+  }
+}
+
 // ── 검색 게이트 훅 ──
 function gatedDoSearch() {
   if (!canDo('search')) { showPlanToast('키워드 검색은 Basic 이상 플랜에서 이용 가능합니다.'); return; }
+  if (isLimitReached('search')) { showPlanToast(getLimitMsg('search')); return; }
+  incrementUsage('search');
   doSearch();
 }
 
@@ -5137,9 +5268,11 @@ function getActiveMetrics() {
 function runCompare() {
   if (!DB) return;
   if (!canDo('compare')) {
-    showPlanToast('기관 비교는 Pro 이상 플랜에서 이용 가능합니다. 업그레이드 후 이용해주세요.');
+    showPlanToast('기관 비교는 Basic 이상 플랜에서 이용 가능합니다. 업그레이드 후 이용해주세요.');
     return;
   }
+  if (isLimitReached('compare')) { showPlanToast(getLimitMsg('compare')); return; }
+  incrementUsage('compare');
   const orgA = document.getElementById('cmpOrgA').value;
   const orgB = cmpOrgBVisible ? document.getElementById('cmpOrgB').value : '';
   const yearFrom = document.getElementById('cmpYearFrom').value;
