@@ -2906,6 +2906,22 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
 .admin-member-table td.col-date { color: var(--ink-4); font-size: 11px; white-space: nowrap; }
 .admin-member-table td.col-plan { white-space: nowrap; }
 .admin-member-table td.col-action { white-space: nowrap; }
+.admin-pagination {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; margin-top: 10px; padding: 2px 0;
+}
+.admin-pagination button {
+  background: none; border: 1.5px solid var(--line-2);
+  padding: 4px 12px; font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 11px; color: var(--ink-3); cursor: pointer;
+  transition: var(--t); letter-spacing: 0.02em;
+}
+.admin-pagination button:hover:not(:disabled) { border-color: var(--blue); color: var(--blue); }
+.admin-pagination button:disabled { opacity: 0.35; cursor: default; }
+.admin-pagination .pg-info {
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 11px; color: var(--ink-4); letter-spacing: 0.02em; min-width: 70px; text-align: center;
+}
 .admin-inline-select {
   appearance: none; padding: 3px 22px 3px 7px;
   border: 1.5px solid var(--line-2);
@@ -2989,10 +3005,15 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
     <div class="admin-section-title" style="margin-top:32px">전체 회원 목록 — ALL MEMBERS</div>
     <div class="admin-member-toolbar">
       <span class="admin-member-count" id="adminMemberCount">—</span>
-      <button class="admin-member-refresh" onclick="loadAllMembers()">↻ 새로고침</button>
+      <button class="admin-member-refresh" onclick="loadAllMembers(1)">↻ 새로고침</button>
     </div>
     <div id="adminMemberTableWrap">
       <div class="admin-no-result">패널을 열면 자동으로 불러옵니다.</div>
+    </div>
+    <div class="admin-pagination" id="adminPagination" style="display:none">
+      <button id="pgPrev" onclick="loadAllMembers(_memberPage - 1)">← 이전</button>
+      <span class="pg-info" id="pgInfo"></span>
+      <button id="pgNext" onclick="loadAllMembers(_memberPage + 1)">다음 →</button>
     </div>
     <div class="admin-msg" id="adminMemberMsg"></div>
 
@@ -3720,7 +3741,7 @@ function openAdminPanel() {
   toggleUserMenu(false);
   renderPlanFeatureTable();
   document.getElementById('adminModal').classList.add('open');
-  loadAllMembers();
+  loadAllMembers(1);
 }
 function closeAdminPanel() { document.getElementById('adminModal').classList.remove('open'); }
 function adminModalBgClick(e) { if (e.target === e.currentTarget) closeAdminPanel(); }
@@ -3781,31 +3802,49 @@ function saveFeatureSettings() {
   setTimeout(() => { msg.textContent = ''; }, 4000);
 }
 
-// ── 전체 회원 목록 불러오기 (RPC: get_all_users)
-async function loadAllMembers() {
+// ── 전체 회원 목록 불러오기 (페이지네이션)
+const MEMBERS_PER_PAGE = 20;
+let _memberPage = 1;
+let _memberTotal = 0;
+
+async function loadAllMembers(page = 1) {
   const wrap = document.getElementById('adminMemberTableWrap');
   const countEl = document.getElementById('adminMemberCount');
   const msgEl = document.getElementById('adminMemberMsg');
+  const pgEl = document.getElementById('adminPagination');
+  const pgInfo = document.getElementById('pgInfo');
+  const pgPrev = document.getElementById('pgPrev');
+  const pgNext = document.getElementById('pgNext');
   if (!wrap) return;
 
   wrap.innerHTML = `<div class="admin-no-result">불러오는 중...</div>`;
   if (countEl) countEl.textContent = '—';
+  if (pgEl) pgEl.style.display = 'none';
 
   if (SUPABASE_URL.includes('YOUR_PROJECT_ID')) {
     wrap.innerHTML = `<div class="admin-no-result">⚠ Supabase 연결이 필요합니다.</div>`;
     return;
   }
 
+  const from = (page - 1) * MEMBERS_PER_PAGE;
+  const to = from + MEMBERS_PER_PAGE - 1;
+
   try {
-    const { data, error } = await _supabase.rpc('get_all_users');
+    const { data, error, count } = await _supabase
+      .rpc('get_all_users', {}, { count: 'exact' })
+      .range(from, to);
     if (error) throw error;
 
     if (!data || data.length === 0) {
-      wrap.innerHTML = `<div class="admin-no-result">등록된 회원이 없습니다.</div>`;
+      wrap.innerHTML = `<div class="admin-no-result">${page === 1 ? '등록된 회원이 없습니다.' : '마지막 페이지입니다.'}</div>`;
       return;
     }
 
-    if (countEl) countEl.textContent = `총 ${data.length}명`;
+    _memberPage = page;
+    _memberTotal = count ?? _memberTotal;
+    const totalPages = Math.ceil(_memberTotal / MEMBERS_PER_PAGE);
+
+    if (countEl) countEl.textContent = `총 ${_memberTotal}명`;
 
     const planColors = { free: '#8b8b8d', basic: '#1d7aed', pro: '#9333ea', admin: '#e04c2f' };
 
@@ -3814,13 +3853,13 @@ async function loadAllMembers() {
         ? new Date(u.created_at).toLocaleDateString('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit' })
         : '—';
       const plan = u.plan || 'free';
-      const planLabel = PLAN_FEATURES[plan]?.label || plan.toUpperCase();
-      const planColor = planColors[plan] || '#8b8b8d';
       const opts = ['free','basic','pro','admin'].map(p =>
-        `<option value="${p}" ${plan===p?'selected':''}>${PLAN_FEATURES[p]?.label||p.toUpperCase()}</option>`
+        `<option value="${p}" ${plan===p?'selected':''}>
+          ${PLAN_FEATURES[p]?.label||p.toUpperCase()}</option>`
       ).join('');
-
-      const nameStr = u.full_name ? `<span style="font-weight:600">${esc(u.full_name)}</span><br><span style="color:var(--ink-4);font-size:11px">${esc(u.email)}</span>` : esc(u.email);
+      const nameStr = u.full_name
+        ? `<span style="font-weight:600">${esc(u.full_name)}</span><br><span style="color:var(--ink-4);font-size:11px">${esc(u.email)}</span>`
+        : esc(u.email);
 
       return `<tr id="mrow_${u.user_id}">
         <td class="col-email" title="${esc(u.email)}">${nameStr}</td>
@@ -3849,6 +3888,14 @@ async function loadAllMembers() {
           <tbody>${rows}</tbody>
         </table>
       </div>`;
+
+    // 페이지네이션 UI 업데이트
+    if (pgEl && totalPages > 1) {
+      pgEl.style.display = 'flex';
+      if (pgInfo) pgInfo.textContent = `${page} / ${totalPages}`;
+      if (pgPrev) pgPrev.disabled = page <= 1;
+      if (pgNext) pgNext.disabled = page >= totalPages;
+    }
 
   } catch (e) {
     wrap.innerHTML = `<div class="admin-no-result">오류: ${esc(e.message)}</div>`;
