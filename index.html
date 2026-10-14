@@ -3,8 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>잉크닷서치 — 공공기관 유튜브 데이터 아카이브</title>
-<meta name="description" content="공공기관·정부기관 유튜브 채널의 조회수·좋아요·댓글·구독자를 추적하고 분석하는 데이터 아카이브. 단일 채널 분석부터 기관 간 비교분석까지.">
+<title>잉크닷서치 — 공공기관 유튜브 조회수·순위 데이터 아카이브</title>
+<meta name="description" content="중앙부처·광역자치단체 등 공공기관 공식 유튜브 영상 5만여 편의 조회수·좋아요·댓글·구독자를 2022년부터 매주 기록한 데이터 아카이브. 기관별 검색, 이번 주 반응 순위, 기관 간 비교를 제공합니다.">
+<link rel="canonical" href="https://search.inkdot.kr/">
+<meta name="robots" content="index,follow,max-image-preview:large">
+
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "name": "잉크닷서치", "alternateName": ["inkdot search", "잉크닷 서치"], "url": "https://search.inkdot.kr/", "inLanguage": "ko-KR", "publisher": {"@type": "Organization", "name": "콘텐츠닿", "url": "https://inkdot.kr/about/", "brand": "잉크닷"}}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Dataset", "name": "공공기관 유튜브 주간 데이터 아카이브", "description": "중앙행정기관과 광역자치단체 공식 유튜브 채널의 영상별 조회수·좋아요·댓글과 월별 구독자를 2022년 11월부터 매주 기록한 데이터", "url": "https://search.inkdot.kr/", "creator": {"@type": "Organization", "name": "콘텐츠닿", "url": "https://inkdot.kr/"}, "temporalCoverage": "2022-11/..", "spatialCoverage": "대한민국", "variableMeasured": ["조회수", "좋아요", "댓글", "구독자", "참여율"], "keywords": ["공공기관 유튜브", "정부 유튜브", "지자체 유튜브", "유튜브 조회수", "유튜브 순위"], "inLanguage": "ko-KR"}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "공공기관 유튜브 조회수는 어디서 볼 수 있나요?", "acceptedAnswer": {"@type": "Answer", "text": "잉크닷서치에서 기관명이나 키워드로 검색하면 중앙부처·광역자치단체 공식 유튜브 영상의 조회수·좋아요·댓글을 주차별로 볼 수 있습니다."}}, {"@type": "Question", "name": "잉크닷서치 데이터는 언제 갱신되나요?", "acceptedAnswer": {"@type": "Answer", "text": "매주 한 번, 지난 일주일 동안 공공기관 유튜브에 올라온 영상을 수집해 갱신합니다."}}, {"@type": "Question", "name": "참여율은 어떻게 계산하나요?", "acceptedAnswer": {"@type": "Answer", "text": "참여율은 (좋아요 수 + 댓글 수) ÷ 조회수 × 100으로 계산합니다. 조회 규모와 별개로 시청자가 얼마나 반응했는지를 보는 지표입니다."}}]}</script>
 
 <!-- Open Graph (Facebook, LinkedIn, KakaoTalk) -->
 <meta property="og:type" content="website">
@@ -8282,5 +8288,34 @@ function esc(s) {
 // ── Auth 초기화 (DOM 준비 후 즉시 실행) ──
 initAuth();
 </script>
+
+<!-- 검색엔진·AI용 소개 (자바스크립트 없이도 읽히는 정적 내용) -->
+<section class="ink-about" aria-labelledby="inkAboutTitle">
+<style>
+.ink-about{max-width:1080px;margin:56px auto 40px;padding:32px 24px 8px;border-top:1px solid rgba(0,0,0,.12);font-size:14px;line-height:1.75;color:#3a3a3e}
+.ink-about h2{font-size:18px;margin:0 0 10px;color:#0e0e10}.ink-about h3{font-size:15px;margin:22px 0 6px;color:#0e0e10}
+.ink-about p{margin:0 0 10px}.ink-about ul{margin:0 0 10px;padding-left:18px}.ink-about a{color:#1a3eff}
+.ink-about .ink-orgs{font-size:13px;color:#5b5b60}.ink-about dt{font-weight:600;color:#0e0e10;margin-top:12px}.ink-about dd{margin:2px 0 0}
+@media (prefers-color-scheme:dark){.ink-about{color:#c9c9cf;border-color:rgba(255,255,255,.15)}.ink-about h2,.ink-about h3,.ink-about dt{color:#f2f2f5}.ink-about .ink-orgs{color:#a0a0a8}}
+</style>
+<h2 id="inkAboutTitle">잉크닷서치는 공공기관 유튜브 데이터 아카이브입니다</h2>
+<p>잉크닷서치는 중앙행정기관과 광역자치단체 공식 유튜브 채널에 올라온 영상 5만여 편을 2022년 11월부터 매주 기록한 데이터베이스입니다. 영상별 조회수·좋아요·댓글과 기관별 월간 구독자를 모아, 어떤 기관의 어떤 영상에 시민이 반응했는지 한곳에서 찾아볼 수 있습니다. 2026년 10월부터 시·도교육청과 주요 공공기관으로 수집 범위를 넓히고 있습니다.</p>
+<h3>할 수 있는 일</h3>
+<ul>
+<li><strong>트렌드</strong>: 이번 주 공공기관 유튜브의 조회와 반응(참여율) 지도, 떠오르는 기관, 반응이 뜨거웠던 영상</li>
+<li><strong>검색</strong>: 기관명·키워드로 영상 찾기, 연도·주차·기관 구분·영상 유형(일반/쇼츠)별 필터</li>
+<li><strong>비교</strong>: 두 기관의 조회·참여율·구독자 추이를 나란히 비교</li>
+</ul>
+<h3>수록 기관</h3>
+<p class="ink-orgs"><strong>중앙행정기관 51곳</strong>: 감사원, 개인정보보호위원회, 검찰청(현 공소청), 경찰청, 경호처, 고용노동부, 공정거래위원회, 과학기술정보통신부, 관세청, 교육부, 국가데이터처, 국가보훈부, 국가유산청, 국무총리실, 국민권익위원회, 국방부, 국세청, 국토교통부, 금융위원회, 기상청, 기획예산처, 기후에너지환경부, 농림축산식품부, 농촌진흥청, 문화체육관광부, 방위사업청, 법무부, 법제처, 병무청, 보건복지부, 산림청, 산업통상부, 새만금개발청, 성평등가족부, 소방청, 식품의약품안전처, 외교부, 우주항공청, 원자력안전위원회, 인사혁신처, 재외동포청, 재정경제부, 조달청, 중소벤처기업부, 지식재산처, 질병관리청, 통일부, 해양경찰청, 해양수산부, 행정안전부, 행정중심복합도시건설청</p>
+<p class="ink-orgs"><strong>광역자치단체 17곳</strong>: 강원특별자치도, 경기도, 경상남도, 경상북도, 광주광역시, 대구광역시, 대전광역시, 부산광역시, 서울특별시, 세종특별자치시, 울산광역시, 인천광역시, 전라남도, 전북특별자치도, 제주특별자치도, 충청남도, 충청북도</p>
+<h3>자주 묻는 질문</h3>
+<dl>
+<dt>공공기관 유튜브 조회수는 어디서 볼 수 있나요?</dt><dd>잉크닷서치에서 기관명이나 키워드로 검색하면 중앙부처·광역자치단체 공식 유튜브 영상의 조회수·좋아요·댓글을 주차별로 볼 수 있습니다.</dd>
+<dt>잉크닷서치 데이터는 언제 갱신되나요?</dt><dd>매주 한 번, 지난 일주일 동안 공공기관 유튜브에 올라온 영상을 수집해 갱신합니다.</dd>
+<dt>참여율은 어떻게 계산하나요?</dt><dd>참여율은 (좋아요 수 + 댓글 수) ÷ 조회수 × 100으로 계산합니다. 조회 규모와 별개로 시청자가 얼마나 반응했는지를 보는 지표입니다.</dd>
+</dl>
+<p>매주 데이터를 바탕으로 한 분석 리포트는 <a href="https://inkdot.kr/">잉크닷(inkdot.kr)</a>에서 볼 수 있습니다. 운영: 콘텐츠닿 · <a href="https://inkdot.kr/about/">채널진단·협업 문의</a></p>
+</section>
 </body>
 </html>
