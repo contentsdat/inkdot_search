@@ -3750,8 +3750,11 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
         <div class="tr-ctl">
           <div class="tr-seg" id="trFilter">
             <button data-cat="all" class="on">전체</button>
-            <button data-cat="central">중앙</button>
-            <button data-cat="local">지방</button>
+            <button data-cat="중앙">중앙</button>
+            <button data-cat="광역">광역</button>
+            <button data-cat="교육청">교육청</button>
+            <button data-cat="공공기관">공공기관</button>
+            <button data-cat="기초">기초</button>
           </div>
           <div class="tr-seg" id="trMode">
             <button data-mode="eng" class="on">참여율 분포</button>
@@ -3766,7 +3769,7 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
           <span id="trCallout"></span>
           <span style="display:flex;align-items:center;gap:14px;margin-left:auto;font-size:10.5px;color:#8b8b8d">
             <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#0e0e10;opacity:.4;display:block"></span>중앙</span>
-            <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:oklch(0.62 0.16 55);display:block"></span>지방</span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:oklch(0.62 0.16 55);display:block"></span>지역(광역·교육청)</span>
             <span style="display:flex;align-items:center;gap:5px"><span style="width:16px;border-top:1px dashed #8b8b8d;display:block"></span>참여율 중위</span>
           </span>
         </div>
@@ -3878,7 +3881,10 @@ mark { background: var(--blue-tint); color: var(--blue-2); padding: 0 2px; font-
         <div class="btn-stack" id="orgTypeSeg">
           <button class="on" data-val="">전체</button>
           <button data-val="중앙">중앙</button>
-          <button data-val="지방">지방</button>
+          <button data-val="광역">광역</button>
+          <button data-val="교육청">교육청</button>
+          <button data-val="공공기관">공공기관</button>
+          <button data-val="기초">기초</button>
         </div>
       </div>
     </div>
@@ -4899,7 +4905,7 @@ function buildTrend(){
   var last = TR.weeks[TR.weeks.length-1];
 
   TR.cur = all.filter(function(d){return trWk(d)===last;}).map(function(d){
-    return { o:d.o, loc:(d.ot||'')==='지방', ty:(d.t||'')||'미상', v:d.v, l:d.l||0, c:d.c||0,
+    return { o:d.o, loc:isLocalOt(d.ot||''), ot:d.ot||'', ty:(d.t||'')||'미상', v:d.v, l:d.l||0, c:d.c||0,
              ti:d.ti||'', u:d.u||'', th:d.th||'', raw:d,
              eng:d.v>0?((d.l||0)+(d.c||0))/d.v*100:0 };});
 
@@ -4910,7 +4916,7 @@ function buildTrend(){
   var S={};
   all.forEach(function(d){
     var w=trWk(d); if(!(w in idx)) return;
-    var s=S[d.o]||(S[d.o]={o:d.o,loc:(d.ot||'')==='지방',
+    var s=S[d.o]||(S[d.o]={o:d.o,loc:isLocalOt(d.ot||''), ot:d.ot||'',
       v:new Array(TR.span.length).fill(0),l:new Array(TR.span.length).fill(0),c:new Array(TR.span.length).fill(0)});
     var i=idx[w]; s.v[i]+=d.v; s.l[i]+=d.l||0; s.c[i]+=d.c||0;});
   TR.series = Object.keys(S).map(function(k){return S[k];});
@@ -4954,7 +4960,7 @@ function cmpBuildExample(){
     svg+='<text x="'+X(i).toFixed(1)+'" y="'+(H-B+16)+'" text-anchor="middle" font-size="8.5" fill="#a8a79f" font-family="JetBrains Mono,monospace">'+(labels[i]||'')+'</text>';});
   svg+='</svg>';
   var legend='<div style="display:flex;gap:16px;justify-content:center;margin-top:8px">'+ser.map(function(s,si){
-    return '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:'+COL[si]+'"><span style="width:14px;height:0;border-top:2.5px '+(si?'dashed':'solid')+' '+COL[si]+'"></span>'+esc(s.o)+(s.loc?' · 지방':'')+'</span>';
+    return '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:'+COL[si]+'"><span style="width:14px;height:0;border-top:2.5px '+(si?'dashed':'solid')+' '+COL[si]+'"></span>'+esc(s.o)+(s.loc?' · '+(s.ot||''):'')+'</span>';
   }).join('')+'</div>';
   wrap.innerHTML =
     '<div style="position:relative;border:0.5px solid #e0ddd4;border-radius:12px;background:#fff;padding:16px 16px 14px;overflow:hidden">'+
@@ -4977,7 +4983,7 @@ var TR_VMIN=1000, TR_VMAX=100000, TR_EMAX=16;
 function trX(v){var lv=Math.log10(Math.min(Math.max(v,TR_VMIN),TR_VMAX));
   return TR_L+(TR_PW-TR_L-TR_R)*(lv-Math.log10(TR_VMIN))/(Math.log10(TR_VMAX)-Math.log10(TR_VMIN));}
 function trY(e){return TR_T+(TR_PH-TR_T-TR_B)*(1-Math.sqrt(Math.min(Math.max(e,0),TR_EMAX)/TR_EMAX));}
-function trPool(){return TR.filt==='all'?TR.cur:TR.cur.filter(function(d){return TR.filt==='local'?d.loc:!d.loc;});}
+function trPool(){return TR.filt==='all'?TR.cur:TR.cur.filter(function(d){return (d.ot||'')===TR.filt;});}
 function trCloud(){return trPool().filter(function(d){return d.v>=TR.ENG_FLOOR;});}
 function trSample(C){
   if(C.length<=TR.DOT_MAX) return C;
@@ -5113,6 +5119,7 @@ function trRenderMyMove(){
   }
   var s=TR.series.find(function(x){return x.o===TR.myOrg;});
   var loc=rank.o.loc || (s && s.loc);
+  var otl=(rank.o.ot)||(s&&s.ot)||(loc?'광역':'중앙');
   var METR=[
     {k:'v', lbl:'조회수', val:rank.o.v, rk:rank.rv},
     {k:'l', lbl:'좋아요', val:rank.o.l, rk:rank.rl},
@@ -5144,7 +5151,7 @@ function trRenderMyMove(){
   box.innerHTML='<div class="tr-mymove-card">'+
     '<div class="tr-mymove-head">'+
       '<span class="tr-mymove-name">'+esc(TR.myOrg)+'</span>'+
-      '<span class="tr-mymove-badge'+(loc?' loc':'')+'">'+(loc?'지방':'중앙')+'</span>'+
+      '<span class="tr-mymove-badge'+(loc?' loc':'')+'">'+esc(otl)+'</span>'+
       '<span class="tr-mymove-scope">이번 주 · '+rank.total+'개 기관 중</span>'+
     '</div>'+
     '<div class="tr-mymove-cols">'+cols+'</div>'+
@@ -5202,7 +5209,7 @@ function trDrawScatter(){
       '--dur:'+dur+'s;--dly:'+dly+'s;z-index:'+(isHero?6:1)+'">'+
       '<div class="tr-th-in"'+(d.loc?' style="border-color:'+TR_LOC+'"':'')+'>'+trImg(d,false,'')+
       '<span class="tr-sh"></span>'+
-      '<span class="tr-otype'+(d.loc?' loc':'')+'">'+(d.loc?'지방':'중앙')+'</span>'+
+      '<span class="tr-otype'+(d.loc?' loc':'')+'">'+esc(d.ot||'')+'</span>'+
       '<span class="tr-lb"><span class="r">'+d.eng.toFixed(1)+'%</span>'+
       '<span class="o">'+esc(d.o.slice(0,7))+'</span></span></div></div>';}).join('');
 
@@ -5219,7 +5226,7 @@ function trDrawScatter(){
 
   trRenderMyStar();  // 별표·라벨을 썸네일 위 레이어로 렌더
 
-  document.getElementById('trTag').textContent=(TR.filt==='local'?'지방 ':TR.filt==='central'?'중앙 ':'')+'참여율 1위';
+  document.getElementById('trTag').textContent=(TR.filt&&TR.filt!=='all'?TR.filt+' ':'')+'참여율 1위';
   document.getElementById('trCallout').textContent=best?best.o+' — '+best.eng.toFixed(2)+'% · 조회 '+best.v.toLocaleString()+'회 (중위 '+me.toFixed(2)+'%)':'해당 없음';
   document.getElementById('trDist').textContent='조회수 '+TR.ENG_FLOOR.toLocaleString()+'회 이상 '+C.length.toLocaleString()+'편 중 '+Math.min(C.length,TR.DOT_MAX)+'편 표본';
 }
@@ -5232,7 +5239,7 @@ function trWireHover(){
     var i=+th.getAttribute('data-i'), d=TR.top[i], p=TR.pos[i]; if(!d) return;
     var right=p.x/TR_PW>0.6;
     document.getElementById('trHoverImg').src=trThumb(d,false);
-    document.getElementById('trHoverOrg').textContent=d.o+(d.loc?' · 지방':'');
+    document.getElementById('trHoverOrg').textContent=d.o+(d.loc?' · '+(d.ot||''):'');
     document.getElementById('trHoverTitle').textContent=d.ti;
     document.getElementById('trHoverStats').innerHTML='<span>'+esc(d.ty)+'</span><span>조회 '+d.v.toLocaleString()+'</span><span>♥ '+d.l.toLocaleString()+'</span><span>댓글 '+d.c.toLocaleString()+'</span>';
     document.getElementById('trHoverEng').textContent='참여율 '+d.eng.toFixed(2)+'%';
@@ -5299,7 +5306,7 @@ function trDrawRising(){
       '<span class="tr-rise-top"><span style="min-width:0">'+
       '<span style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
       '<span class="tr-org"'+(o.s.loc?' style="color:'+TR_LOC+'"':'')+'>'+esc(o.s.o)+'</span>'+
-      (o.s.loc?'<span class="tr-loc">지방</span>':'')+
+      (o.s.loc?'<span class="tr-loc">'+esc(o.s.ot||'')+'</span>':'')+
       '<span class="tr-metric">'+m.label+'</span></span>'+
       '<span style="display:flex;align-items:baseline;gap:7px"><span class="tr-big">'+o.r.x.toFixed(1)+'배</span>'+
       '<span class="tr-cap">직전 '+(a.length-1)+'주 평균 대비</span></span></span>'+
@@ -5351,7 +5358,7 @@ function trDrawGems(){
     '<span style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px">'+
     '<span class="tr-hero1-num">01</span><span style="display:block;padding-top:6px">'+
     '<span style="display:block;font-size:10px;color:#8b8b8d;letter-spacing:.08em;text-transform:uppercase;font-weight:600">참여율 1위</span>'+
-    '<span style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--blue,#1a3eff);margin-top:4px">'+esc(h.o)+(h.loc?'<span class="tr-loc">지방</span>':'')+'</span></span></span>'+
+    '<span style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--blue,#1a3eff);margin-top:4px">'+esc(h.o)+(h.loc?'<span class="tr-loc">'+esc(h.ot||'')+'</span>':'')+'</span></span></span>'+
     '<span class="tr-hero1-title">'+esc(h.ti)+'</span></span>'+
     '<span class="tr-hero1-stats">'+trStat('참여율',h.eng.toFixed(2)+'%','var(--blue,#1a3eff)')+
     trStat('조회수',h.v.toLocaleString())+trStat('좋아요',h.l.toLocaleString())+'</span></span></button>';
@@ -5360,12 +5367,12 @@ function trDrawGems(){
     return '<button class="tr-card" onclick="trOpenVideo(\'gem\','+(i+1)+')">'+
       '<span class="tr-frame tr-vthumb">'+trImg(d,false,'')+
       '<span class="tr-vrank">#'+String(i+2).padStart(2,'0')+'</span></span>'+
-      '<span class="tr-vbody"><span class="tr-vorg">'+esc(d.o)+(d.loc?'<span class="tr-loc">지방</span>':'')+'</span>'+
+      '<span class="tr-vbody"><span class="tr-vorg">'+esc(d.o)+(d.loc?'<span class="tr-loc">'+esc(d.ot||'')+'</span>':'')+'</span>'+
       '<span class="tr-vtitle">'+esc(d.ti)+'</span>'+
       '<span class="tr-vstats"><span><b>'+d.eng.toFixed(2)+'%</b> 참여율</span><span>'+d.v.toLocaleString()+'회</span></span>'+
       '</span></button>';}).join('');
 
-  document.getElementById('trGemDesc').textContent='조회수 순위와 별개로, 본 사람 대비 좋아요·댓글이 가장 많았던 영상입니다. 중앙·지방을 함께 봅니다. 카드를 누르면 영상 상세가 열립니다.';
+  document.getElementById('trGemDesc').textContent='조회수 순위와 별개로, 본 사람 대비 좋아요·댓글이 가장 많았던 영상입니다. 모든 기관을 함께 봅니다. 카드를 누르면 영상 상세가 열립니다.';
   document.getElementById('trGemNote').textContent='조회수 '+TR.ENG_FLOOR.toLocaleString()+'회 이상 '+TR.cur.filter(function(d){return d.v>=TR.ENG_FLOOR;}).length+'편 중 · 기관당 최대 1편 · 참여율 = (좋아요+댓글) ÷ 조회수';
 }
 
@@ -5543,7 +5550,7 @@ const DESC_URL = 'https://raw.githubusercontent.com/contentsdat/inkdot_search/ma
       for (const [month, val] of Object.entries(rawData)) {
         if (val !== null && val !== undefined) cleanData[month] = val;
       }
-      db[org] = { ot: fetched[org].ot || fetched[org].구분 || '', data: cleanData };
+      db[org] = { ot: normOt(fetched[org].ot || fetched[org].구분 || ''), data: cleanData };
     }
     SUBSCRIBER_DB = db;
   }
@@ -5553,6 +5560,30 @@ const DESC_URL = 'https://raw.githubusercontent.com/contentsdat/inkdot_search/ma
 // ─── Data normalization ───
 // 2026년 1월부터 t 필드에 '중앙'/'지방'이 들어오고 ot가 비어있는 구조로 변경됨.
 // normalizeData()로 t/ot 를 일관된 형태로 정규화한다.
+// 기관 구분 (2026-10 개편): 중앙 / 광역 / 교육청 / 공공기관 / 기초
+// 예전 데이터의 '지방'은 광역자치단체이므로 '광역'으로 읽는다.
+const OT_LIST = ['중앙', '광역', '교육청', '공공기관', '기초'];
+function normOt(v) {
+  const s = String(v || '').trim();
+  if (!s) return '';
+  if (s === '중앙' || s.indexOf('중앙') === 0) return '중앙';
+  if (s === '지방' || s.indexOf('광역') === 0) return '광역';
+  if (s.indexOf('교육청') >= 0) return '교육청';
+  if (s.indexOf('공공') >= 0 || s.indexOf('공기업') >= 0 || s.indexOf('준정부') >= 0) return '공공기관';
+  if (s.indexOf('기초') === 0) return '기초';
+  return s;
+}
+// 지역 기관(지도·색 구분용): 광역·교육청·기초
+function isLocalOt(ot) { return ot === '광역' || ot === '교육청' || ot === '기초'; }
+// 데이터에 없는 구분 버튼은 숨김
+function hideUnusedOtButtons(items) {
+  const present = new Set(items.map(d => d.ot));
+  document.querySelectorAll('#orgTypeSeg button[data-val], #trFilter button[data-cat]').forEach(b => {
+    const v = b.dataset.val !== undefined ? b.dataset.val : b.dataset.cat;
+    if (!v || v === 'all') return;
+    b.style.display = present.has(v) ? '' : 'none';
+  });
+}
 function normalizeData(items) {
   return items.map(d => {
     const raw = Object.assign({}, d);
@@ -5563,6 +5594,7 @@ function normalizeData(items) {
       raw.ot = t;   // 기관구분
       raw.t = '';   // 영상유형 불명 (쇼츠 여부 알 수 없음)
     }
+    raw.ot = normOt(raw.ot);
     // 오타 보정
     if (raw.t === '알번' || raw.t === '일반반') raw.t = '일반';
     // URL 없는 항목은 명시적으로 빈 문자열 보장
@@ -5578,6 +5610,7 @@ function initApp(json) {
   hideSplash();
   DB = json;
   DB.data = normalizeData(DB.data);
+  try { hideUnusedOtButtons(DB.data); } catch (e) {}
   const m = DB.meta || {};
   const totalCnt = (m.total || DB.data.length);
   const totalStr = totalCnt.toLocaleString();
@@ -5754,7 +5787,7 @@ const PRESETS = [
   { id: 'comm',      name: '댓글 TOP',      sub: 'MOST DISCUSSED',  title: '최근 3달 · 영상 단위 댓글 많은 순',                 apply: () => ({ recentWeeks: 12, sort: 'comments' }) },
   { id: 'shorts',    name: '쇼츠 TOP',      sub: 'BEST SHORTS',     title: '최근 3달 · 쇼츠 영상만 · 조회수 높은 순',          apply: () => ({ vidType: '쇼츠', recentWeeks: 12, sort: 'views' }) },
   { id: 'central',   name: '중앙기관 TOP',  sub: 'CENTRAL ORGS',   title: '최근 3달 · 중앙기관 영상만 · 조회수 높은 순',      apply: () => ({ orgType: '중앙', recentWeeks: 12, sort: 'views' }) },
-  { id: 'local',     name: '지방기관 TOP',  sub: 'LOCAL ORGS',     title: '최근 3달 · 지방기관 영상만 · 조회수 높은 순',      apply: () => ({ orgType: '지방', recentWeeks: 12, sort: 'views' }) },
+  { id: 'local',     name: '광역기관 TOP',  sub: 'LOCAL ORGS',     title: '최근 3달 · 광역자치단체 영상만 · 조회수 높은 순',      apply: () => ({ orgType: '광역', recentWeeks: 12, sort: 'views' }) },
 ];
 let activePreset = null;
 let presetExtras = {}; // latestWeekOnly / recentWeeks runtime carrier
@@ -5938,7 +5971,9 @@ function updateStats() {
   const tc = filtered.reduce((s,d) => s+d.c, 0);
   const total = filtered.length;
   const central = filtered.filter(d => d.ot === '중앙').length;
-  const local = filtered.filter(d => d.ot === '지방').length;
+  const otCountsHtml = OT_LIST.map(o => [o, filtered.filter(d => d.ot === o).length]).filter(x => x[1] > 0)
+    .map(([o, n]) => `<span class="vg-item"><span class="vg-label">${o}</span><span class="vg-val">${n.toLocaleString()}</span></span>
+      <span class="vg-sep">·</span>`).join('');
   const general = filtered.filter(d => d.t === '일반').length;
   const shorts = filtered.filter(d => d.t === '쇼츠').length;
   document.getElementById('statMini').innerHTML = `
@@ -5949,10 +5984,7 @@ function updateStats() {
     <div class="item item-full"><span class="lbl">영상수</span><span class="val-group">
       <span class="vg-item"><span class="vg-label">전체</span><span class="vg-val">${total.toLocaleString()}</span></span>
       <span class="vg-sep">·</span>
-      <span class="vg-item"><span class="vg-label">중앙</span><span class="vg-val">${central.toLocaleString()}</span></span>
-      <span class="vg-sep">·</span>
-      <span class="vg-item"><span class="vg-label">지방</span><span class="vg-val">${local.toLocaleString()}</span></span>
-      <span class="vg-sep">·</span>
+      ${otCountsHtml}
       <span class="vg-item"><span class="vg-label">일반</span><span class="vg-val">${general.toLocaleString()}</span></span>
       <span class="vg-sep">·</span>
       <span class="vg-item"><span class="vg-label">쇼츠</span><span class="vg-val">${shorts.toLocaleString()}</span></span>
@@ -6089,7 +6121,7 @@ function renderList(rows) {
       </div>
       <div class="row-body">
         <div class="row-meta">
-          <span class="tag-org ${d.ot==='지방'?'local':''}">${esc(d.o)}</span>
+          <span class="tag-org ${isLocalOt(d.ot)?'local':''}">${esc(d.o)}</span>
           <span class="sep"></span>
           <span>${esc(d.ot)}</span>
           <span class="sep"></span>
@@ -6136,7 +6168,7 @@ function renderCards(rows) {
       <div class="card-body">
         <div class="card-tag-row">
           <span class="card-rank">${rank}</span>
-          <span class="card-tag-org ${d.ot==='지방'?'local':''}" title="${esc(d.o)}">${esc(d.o)}</span>
+          <span class="card-tag-org ${isLocalOt(d.ot)?'local':''}" title="${esc(d.o)}">${esc(d.o)}</span>
         </div>
         <div class="card-title">${highlight(d.ti)}</div>
         <div class="card-meta-row">
@@ -8224,7 +8256,7 @@ function esc(s) {
           const i = (globalW * 7 + k) % orgs.length;
           const o = orgs[i];
           const t = (i + k) % 4 === 0 ? '쇼츠' : '일반';
-          const ot = i < 10 ? '중앙' : '지방';
+          const ot = i < 10 ? '중앙' : '광역';
           const ti = `${o} ${sample[(i + k) % sample.length]} #${year}-${w}-${k+1}`;
           const baseV = (200000 + Math.random() * 3000000) * seasonal;
           const v = Math.floor(baseV);
